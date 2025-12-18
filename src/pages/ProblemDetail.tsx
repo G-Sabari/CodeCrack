@@ -9,13 +9,16 @@ import {
   Lightbulb,
   Clock,
   Building2,
-  Tag
+  Tag,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { CodeEditor } from '@/components/problem/CodeEditor';
 import { ExecutionPanel } from '@/components/problem/ExecutionPanel';
 import { AIMentor } from '@/components/problem/AIMentor';
@@ -83,23 +86,23 @@ The key insight is that for each number \`x\`, we need to find if \`target - x\`
   },
   starterCode: {
     python: `def twoSum(nums, target):
-    # Write your code here
+    # Write your solution here
     pass`,
     java: `class Solution {
     public int[] twoSum(int[] nums, int target) {
-        // Write your code here
+        // Write your solution here
         return new int[]{};
     }
 }`,
     cpp: `class Solution {
 public:
     vector<int> twoSum(vector<int>& nums, int target) {
-        // Write your code here
+        // Write your solution here
         return {};
     }
 };`,
     javascript: `function twoSum(nums, target) {
-    // Write your code here
+    // Write your solution here
     return [];
 }`,
   },
@@ -134,6 +137,7 @@ export default function ProblemDetail() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastResult, setLastResult] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('description');
+  const [isMentorExpanded, setIsMentorExpanded] = useState(true);
 
   // Load starter code when language changes
   const handleLanguageChange = useCallback((newLang: string) => {
@@ -254,11 +258,11 @@ export default function ProblemDetail() {
         </Button>
       </header>
 
-      {/* Main Content */}
-      <div className="flex-1 flex min-h-0">
+      {/* Main Content - Horizontal Split */}
+      <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
         {/* Left Panel - Problem Description */}
-        <div className="w-[45%] border-r border-border flex flex-col min-h-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <ResizablePanel defaultSize={40} minSize={25} maxSize={60}>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
             <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent px-4 h-11 flex-shrink-0">
               <TabsTrigger value="description" className="data-[state=active]:bg-secondary">
                 <BookOpen className="h-4 w-4 mr-2" />
@@ -377,49 +381,85 @@ export default function ProblemDetail() {
               </ScrollArea>
             </TabsContent>
           </Tabs>
-        </div>
+        </ResizablePanel>
 
-        {/* Right Panel - Code Editor & AI Mentor */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Code Editor - Top */}
-          <div className="flex-1 flex flex-col min-h-0">
-            <CodeEditor
-              language={language}
-              onLanguageChange={handleLanguageChange}
-              code={code}
-              onCodeChange={setCode}
-              problemId={id || 'unknown'}
-            />
-          </div>
+        <ResizableHandle withHandle />
 
-          {/* Execution Panel */}
-          <div className="h-[200px] flex-shrink-0">
-            <ExecutionPanel
-              onRun={() => executeCode('run')}
-              onSubmit={() => executeCode('submit')}
-              isRunning={isRunning}
-              isSubmitting={isSubmitting}
-              lastResult={lastResult}
-            />
-          </div>
+        {/* Right Panel - Code Editor & Execution & AI Mentor */}
+        <ResizablePanel defaultSize={60} minSize={40}>
+          <ResizablePanelGroup direction="vertical" className="h-full">
+            {/* Code Editor - Always Visible */}
+            <ResizablePanel defaultSize={60} minSize={30}>
+              <CodeEditor
+                language={language}
+                onLanguageChange={handleLanguageChange}
+                code={code}
+                onCodeChange={setCode}
+                problemId={id || 'unknown'}
+              />
+            </ResizablePanel>
 
-          {/* AI Mentor - Bottom Right (collapsible) */}
-          <div className="h-[300px] border-t border-border flex-shrink-0">
-            <AIMentor
-              problemTitle={SAMPLE_PROBLEM.title}
-              problemDescription={SAMPLE_PROBLEM.description}
-              userCode={code}
-              language={language}
-              executionResult={lastResult ? {
-                verdict: lastResult.verdict,
-                error: lastResult.results?.[0]?.error,
-                actualOutput: lastResult.results?.[0]?.actualOutput,
-                expectedOutput: lastResult.results?.[0]?.expectedOutput,
-              } : undefined}
-            />
-          </div>
-        </div>
-      </div>
+            <ResizableHandle withHandle />
+
+            {/* Execution Panel */}
+            <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
+              <ExecutionPanel
+                onRun={() => executeCode('run')}
+                onSubmit={() => executeCode('submit')}
+                isRunning={isRunning}
+                isSubmitting={isSubmitting}
+                lastResult={lastResult}
+              />
+            </ResizablePanel>
+
+            <ResizableHandle withHandle />
+
+            {/* AI Mentor - Collapsible */}
+            <ResizablePanel 
+              defaultSize={20} 
+              minSize={8} 
+              maxSize={50}
+              collapsible={true}
+              collapsedSize={8}
+            >
+              <div className="h-full flex flex-col">
+                {/* Mentor Toggle Header */}
+                <button
+                  onClick={() => setIsMentorExpanded(!isMentorExpanded)}
+                  className="flex items-center justify-between px-4 py-2 bg-card border-b border-border hover:bg-secondary/50 transition-colors"
+                >
+                  <span className="font-medium text-sm flex items-center gap-2">
+                    🤖 CodeCrack Mentor
+                  </span>
+                  {isMentorExpanded ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronUp className="h-4 w-4" />
+                  )}
+                </button>
+                {/* Mentor Content */}
+                <div className={cn(
+                  "flex-1 min-h-0 overflow-hidden",
+                  !isMentorExpanded && "hidden"
+                )}>
+                  <AIMentor
+                    problemTitle={SAMPLE_PROBLEM.title}
+                    problemDescription={SAMPLE_PROBLEM.description}
+                    userCode={code}
+                    language={language}
+                    executionResult={lastResult ? {
+                      verdict: lastResult.verdict,
+                      error: lastResult.results?.[0]?.error,
+                      actualOutput: lastResult.results?.[0]?.actualOutput,
+                      expectedOutput: lastResult.results?.[0]?.expectedOutput,
+                    } : undefined}
+                  />
+                </div>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }
