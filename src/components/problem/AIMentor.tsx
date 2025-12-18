@@ -181,43 +181,37 @@ export function AIMentor({
 
   return (
     <div className="flex flex-col h-full bg-card">
-      {/* Header with mode selection */}
-      <div className="p-3 border-b border-border space-y-2">
-        <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
-          <span className="font-semibold">CodeCrack Mentor</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Select value={mode} onValueChange={(v) => setMode(v as MentorMode)}>
-            <SelectTrigger className="w-[160px] h-8">
+      {/* Mode selection bar */}
+      <div className="p-2 border-b border-border flex items-center gap-2 flex-shrink-0">
+        <Select value={mode} onValueChange={(v) => setMode(v as MentorMode)}>
+          <SelectTrigger className="w-[150px] h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {MODE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                <div className="flex items-center gap-2">
+                  <opt.icon className="h-4 w-4" />
+                  {opt.label}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {mode === 'company-feedback' && (
+          <Select value={company} onValueChange={setCompany}>
+            <SelectTrigger className="w-[110px] h-8">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {MODE_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  <div className="flex items-center gap-2">
-                    <opt.icon className="h-4 w-4" />
-                    {opt.label}
-                  </div>
+              {COMPANY_OPTIONS.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {mode === 'company-feedback' && (
-            <Select value={company} onValueChange={setCompany}>
-              <SelectTrigger className="w-[120px] h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {COMPANY_OPTIONS.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Messages */}
