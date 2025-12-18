@@ -1,376 +1,422 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { Navbar } from "@/components/layout/Navbar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  ArrowLeft,
-  Play,
-  Send,
-  Building2,
-  Clock,
-  Lightbulb,
-  AlertTriangle,
-  CheckCircle2,
-  MessageSquare,
-  Code2,
+import { useState, useCallback, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { 
+  ArrowLeft, 
+  Maximize2, 
+  Minimize2,
   BookOpen,
-  Maximize2,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  AlertCircle,
+  Lightbulb,
+  Clock,
+  Building2,
+  Tag
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { CodeEditor } from '@/components/problem/CodeEditor';
+import { ExecutionPanel } from '@/components/problem/ExecutionPanel';
+import { AIMentor } from '@/components/problem/AIMentor';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
-// Sample problem data
-const problemData = {
-  id: 1,
-  title: "Two Sum",
-  difficulty: "Easy",
-  company: "Amazon",
-  year: "2023",
-  round: "Technical Round",
-  frequency: "high",
-  pattern: "Hashing",
-  topic: "Arrays",
-  description: `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
+// Sample problem data - in production this would come from the database
+const SAMPLE_PROBLEM = {
+  id: 'two-sum',
+  title: 'Two Sum',
+  difficulty: 'Easy' as const,
+  frequency: 'high' as const,
+  companies: ['Amazon', 'Google', 'Microsoft', 'Zoho'],
+  tags: ['Array', 'Hash Table'],
+  description: `Given an array of integers \`nums\` and an integer \`target\`, return indices of the two numbers such that they add up to \`target\`.
 
-You may assume that each input would have exactly one solution, and you may not use the same element twice.
+You may assume that each input would have **exactly one solution**, and you may not use the same element twice.
 
 You can return the answer in any order.`,
   examples: [
     {
-      input: "nums = [2,7,11,15], target = 9",
-      output: "[0,1]",
-      explanation: "Because nums[0] + nums[1] == 9, we return [0, 1].",
+      input: 'nums = [2,7,11,15], target = 9',
+      output: '[0,1]',
+      explanation: 'Because nums[0] + nums[1] == 9, we return [0, 1].',
     },
     {
-      input: "nums = [3,2,4], target = 6",
-      output: "[1,2]",
-      explanation: "Because nums[1] + nums[2] == 6, we return [1, 2].",
+      input: 'nums = [3,2,4], target = 6',
+      output: '[1,2]',
+      explanation: 'Because nums[1] + nums[2] == 6, we return [1, 2].',
+    },
+    {
+      input: 'nums = [3,3], target = 6',
+      output: '[0,1]',
+      explanation: '',
     },
   ],
   constraints: [
-    "2 <= nums.length <= 10^4",
-    "-10^9 <= nums[i] <= 10^9",
-    "-10^9 <= target <= 10^9",
-    "Only one valid answer exists.",
+    '2 <= nums.length <= 10^4',
+    '-10^9 <= nums[i] <= 10^9',
+    '-10^9 <= target <= 10^9',
+    'Only one valid answer exists.',
   ],
-  approach: `### Thought Process
+  approach: `## Optimal Approach: Hash Map
 
-1. **Brute Force (Not recommended for interviews)**
-   - Check every pair of numbers → O(n²) time
-   
-2. **Optimal: Hash Map Approach**
-   - For each number, check if (target - num) exists in the map
-   - If yes, return both indices
-   - If no, add current number and index to map
-   
-### Step-by-Step Solution
+The key insight is that for each number \`x\`, we need to find if \`target - x\` exists in the array.
 
-1. Create an empty hash map to store numbers and their indices
-2. Iterate through the array
-3. For each number, calculate complement = target - current_number
-4. Check if complement exists in hash map
-5. If found, return [map[complement], current_index]
-6. Otherwise, add current number to map with its index
-7. Continue until solution is found`,
-  timeComplexity: "O(n)",
-  spaceComplexity: "O(n)",
-  commonMistakes: [
-    "Using the same element twice (e.g., if target is 6 and nums has only one 3)",
-    "Returning values instead of indices",
-    "Not handling negative numbers in the array",
-    "Starting nested loop from 0 instead of i+1 in brute force approach",
-  ],
+### Steps:
+1. Create a hash map to store each number and its index
+2. For each number, check if \`target - num\` exists in the map
+3. If found, return the indices
+4. If not, add the current number to the map
+
+### Why this works:
+- We iterate through the array once
+- For each element, the lookup in hash map is O(1)
+- This gives us O(n) time complexity
+
+### Common Mistakes:
+- Using the same element twice (index check is important)
+- Forgetting to handle negative numbers
+- Using brute force O(n²) approach in interviews`,
+  complexity: {
+    time: 'O(n)',
+    space: 'O(n)',
+  },
   starterCode: {
-    python: `def twoSum(nums: list[int], target: int) -> list[int]:
-    # Write your solution here
+    python: `def twoSum(nums, target):
+    # Write your code here
     pass`,
     java: `class Solution {
     public int[] twoSum(int[] nums, int target) {
-        // Write your solution here
+        // Write your code here
         return new int[]{};
     }
 }`,
     cpp: `class Solution {
 public:
     vector<int> twoSum(vector<int>& nums, int target) {
-        // Write your solution here
+        // Write your code here
         return {};
     }
 };`,
+    javascript: `function twoSum(nums, target) {
+    // Write your code here
+    return [];
+}`,
   },
+  testCases: [
+    { input: 'nums = [2,7,11,15], target = 9', expectedOutput: '[0,1]', isHidden: false },
+    { input: 'nums = [3,2,4], target = 6', expectedOutput: '[1,2]', isHidden: false },
+    { input: 'nums = [3,3], target = 6', expectedOutput: '[0,1]', isHidden: false },
+    { input: 'nums = [1,2,3,4,5], target = 9', expectedOutput: '[3,4]', isHidden: true },
+    { input: 'nums = [-1,-2,-3,-4,-5], target = -8', expectedOutput: '[2,4]', isHidden: true },
+    { input: 'nums = [0,4,3,0], target = 0', expectedOutput: '[0,3]', isHidden: true },
+  ],
 };
 
-const difficultyColors = {
-  Easy: "text-[hsl(var(--success))] bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/30",
-  Medium: "text-[hsl(var(--warning))] bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/30",
-  Hard: "text-destructive bg-destructive/10 border-destructive/30",
+const DIFFICULTY_STYLES = {
+  Easy: 'bg-success/10 text-success border-success/20',
+  Medium: 'bg-warning/10 text-warning border-warning/20',
+  Hard: 'bg-destructive/10 text-destructive border-destructive/20',
+};
+
+const FREQUENCY_LABELS = {
+  high: { label: '🔴 Frequently Asked', color: 'text-destructive' },
+  medium: { label: '🟡 Occasionally Asked', color: 'text-warning' },
+  low: { label: '🟢 Rarely Asked', color: 'text-success' },
 };
 
 export default function ProblemDetail() {
-  const { id } = useParams();
-  const [language, setLanguage] = useState("python");
-  const [code, setCode] = useState(problemData.starterCode.python);
-  const [chatMessage, setChatMessage] = useState("");
-  const [chatHistory, setChatHistory] = useState<{ role: string; content: string }[]>([
-    {
-      role: "assistant",
-      content: "Hi! I'm your CodeCrack Mentor. Ask me anything about this problem - I can give hints, explain concepts, or help you debug your approach. What would you like help with?",
-    },
-  ]);
+  const { id } = useParams<{ id: string }>();
+  const [language, setLanguage] = useState('python');
+  const [code, setCode] = useState(SAMPLE_PROBLEM.starterCode.python);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastResult, setLastResult] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('description');
 
-  const handleLanguageChange = (newLang: string) => {
+  // Load starter code when language changes
+  const handleLanguageChange = useCallback((newLang: string) => {
     setLanguage(newLang);
-    setCode(problemData.starterCode[newLang as keyof typeof problemData.starterCode]);
+    const savedCode = localStorage.getItem(`codecrack_code_${id}_${newLang}`);
+    if (savedCode) {
+      setCode(savedCode);
+    } else {
+      setCode(SAMPLE_PROBLEM.starterCode[newLang as keyof typeof SAMPLE_PROBLEM.starterCode] || '');
+    }
+  }, [id]);
+
+  // Execute code
+  const executeCode = async (mode: 'run' | 'submit') => {
+    if (mode === 'run') {
+      setIsRunning(true);
+    } else {
+      setIsSubmitting(true);
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/execute-code`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            code,
+            language,
+            mode,
+            testCases: SAMPLE_PROBLEM.testCases,
+            problemId: id,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Execution failed');
+      }
+
+      const result = await response.json();
+      setLastResult(result);
+
+      if (mode === 'submit') {
+        if (result.verdict === 'Accepted') {
+          toast.success('All test cases passed!');
+        } else {
+          toast.error(`${result.verdict}`);
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Execution error:', error);
+      toast.error('Failed to execute code');
+      return null;
+    } finally {
+      setIsRunning(false);
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSendMessage = () => {
-    if (!chatMessage.trim()) return;
-    
-    setChatHistory([
-      ...chatHistory,
-      { role: "user", content: chatMessage },
-      {
-        role: "assistant",
-        content: "Great question! For this problem, think about what data structure would allow you to quickly check if a number exists. What's the time complexity of checking if an element exists in a hash map?",
-      },
-    ]);
-    setChatMessage("");
+  // Toggle fullscreen
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          executeCode('run');
+        } else if (e.shiftKey && e.key === 'Enter') {
+          e.preventDefault();
+          executeCode('submit');
+        } else if (e.key === 'Escape') {
+          setIsFullscreen(false);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [code, language]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
-
-      <div className="flex-1 pt-16">
-        {/* Problem Header */}
-        <div className="border-b border-border bg-card">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center gap-4 mb-3">
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/problems">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Link>
-              </Button>
-            </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <h1 className="text-2xl font-bold">{problemData.title}</h1>
-              <Badge
-                variant="outline"
-                className={cn("font-medium", difficultyColors[problemData.difficulty as keyof typeof difficultyColors])}
-              >
-                {problemData.difficulty}
-              </Badge>
-              <Badge variant="secondary">{problemData.pattern}</Badge>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Building2 className="h-4 w-4" />
-                {problemData.company} - {problemData.round} ({problemData.year})
-              </div>
-            </div>
+    <div className={cn(
+      'h-screen flex flex-col bg-background',
+      isFullscreen && 'fixed inset-0 z-50'
+    )}>
+      {/* Header */}
+      <header className="h-14 border-b border-border flex items-center justify-between px-4 bg-card flex-shrink-0">
+        <div className="flex items-center gap-4">
+          <Link to="/problems">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Problems
+            </Button>
+          </Link>
+          <Separator orientation="vertical" className="h-6" />
+          <div className="flex items-center gap-3">
+            <h1 className="font-semibold">{SAMPLE_PROBLEM.title}</h1>
+            <Badge variant="outline" className={DIFFICULTY_STYLES[SAMPLE_PROBLEM.difficulty]}>
+              {SAMPLE_PROBLEM.difficulty}
+            </Badge>
+            <span className={cn('text-sm', FREQUENCY_LABELS[SAMPLE_PROBLEM.frequency].color)}>
+              {FREQUENCY_LABELS[SAMPLE_PROBLEM.frequency].label}
+            </span>
           </div>
         </div>
+        <Button variant="ghost" size="icon" onClick={toggleFullscreen}>
+          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </Button>
+      </header>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col lg:flex-row">
-          {/* Left Panel - Problem Description */}
-          <div className="w-full lg:w-1/2 border-r border-border overflow-auto">
-            <Tabs defaultValue="description" className="h-full">
-              <div className="border-b border-border bg-card/50 px-4">
-                <TabsList className="bg-transparent">
-                  <TabsTrigger value="description" className="gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    Problem
-                  </TabsTrigger>
-                  <TabsTrigger value="approach" className="gap-2">
-                    <Lightbulb className="h-4 w-4" />
-                    Approach
-                  </TabsTrigger>
-                  <TabsTrigger value="mistakes" className="gap-2">
-                    <AlertTriangle className="h-4 w-4" />
-                    Mistakes
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+      {/* Main Content */}
+      <div className="flex-1 flex min-h-0">
+        {/* Left Panel - Problem Description */}
+        <div className="w-[45%] border-r border-border flex flex-col min-h-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+            <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent px-4 h-11 flex-shrink-0">
+              <TabsTrigger value="description" className="data-[state=active]:bg-secondary">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Description
+              </TabsTrigger>
+              <TabsTrigger value="approach" className="data-[state=active]:bg-secondary">
+                <Lightbulb className="h-4 w-4 mr-2" />
+                Approach
+              </TabsTrigger>
+              <TabsTrigger value="mistakes" className="data-[state=active]:bg-secondary">
+                <AlertCircle className="h-4 w-4 mr-2" />
+                Common Mistakes
+              </TabsTrigger>
+            </TabsList>
 
-              <div className="p-6">
-                <TabsContent value="description" className="m-0 space-y-6">
-                  {/* Problem Statement */}
-                  <div>
-                    <h3 className="font-semibold mb-3">Problem Statement</h3>
-                    <p className="text-muted-foreground whitespace-pre-line">
-                      {problemData.description}
-                    </p>
+            <TabsContent value="description" className="flex-1 m-0 min-h-0">
+              <ScrollArea className="h-full">
+                <div className="p-6 space-y-6">
+                  {/* Tags & Companies */}
+                  <div className="flex flex-wrap gap-2">
+                    {SAMPLE_PROBLEM.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="gap-1">
+                        <Tag className="h-3 w-3" />
+                        {tag}
+                      </Badge>
+                    ))}
+                    {SAMPLE_PROBLEM.companies.slice(0, 3).map((company) => (
+                      <Badge key={company} variant="outline" className="gap-1">
+                        <Building2 className="h-3 w-3" />
+                        {company}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {/* Description */}
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <p className="whitespace-pre-wrap">{SAMPLE_PROBLEM.description}</p>
                   </div>
 
                   {/* Examples */}
-                  <div>
-                    <h3 className="font-semibold mb-3">Examples</h3>
-                    <div className="space-y-4">
-                      {problemData.examples.map((example, idx) => (
-                        <div key={idx} className="rounded-lg border border-border bg-secondary/30 p-4">
-                          <div className="mb-2">
-                            <span className="text-sm font-medium">Input:</span>
-                            <code className="ml-2 text-sm text-primary">{example.input}</code>
-                          </div>
-                          <div className="mb-2">
-                            <span className="text-sm font-medium">Output:</span>
-                            <code className="ml-2 text-sm text-primary">{example.output}</code>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            <span className="font-medium">Explanation:</span> {example.explanation}
-                          </div>
+                  <div className="space-y-4">
+                    <h3 className="font-semibold">Examples</h3>
+                    {SAMPLE_PROBLEM.examples.map((example, index) => (
+                      <div key={index} className="bg-secondary/50 rounded-lg p-4 space-y-2">
+                        <div className="font-medium text-sm">Example {index + 1}:</div>
+                        <div className="space-y-1 text-sm font-mono">
+                          <div><span className="text-muted-foreground">Input:</span> {example.input}</div>
+                          <div><span className="text-muted-foreground">Output:</span> {example.output}</div>
+                          {example.explanation && (
+                            <div className="text-muted-foreground">{example.explanation}</div>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Constraints */}
-                  <div>
-                    <h3 className="font-semibold mb-3">Constraints</h3>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                      {problemData.constraints.map((constraint, idx) => (
-                        <li key={idx}>{constraint}</li>
+                  <div className="space-y-2">
+                    <h3 className="font-semibold">Constraints</h3>
+                    <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+                      {SAMPLE_PROBLEM.constraints.map((constraint, index) => (
+                        <li key={index} className="font-mono">{constraint}</li>
                       ))}
                     </ul>
                   </div>
-                </TabsContent>
 
-                <TabsContent value="approach" className="m-0 space-y-6">
-                  <div className="prose prose-invert max-w-none">
-                    <div className="whitespace-pre-line text-muted-foreground">
-                      {problemData.approach}
+                  {/* Complexity */}
+                  <div className="flex gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Time:</span>
+                      <code className="bg-secondary px-2 py-0.5 rounded">{SAMPLE_PROBLEM.complexity.time}</code>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">Space:</span>
+                      <code className="bg-secondary px-2 py-0.5 rounded">{SAMPLE_PROBLEM.complexity.space}</code>
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-lg border border-border bg-secondary/30 p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Clock className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Time Complexity</span>
-                      </div>
-                      <code className="text-lg text-primary">{problemData.timeComplexity}</code>
-                    </div>
-                    <div className="rounded-lg border border-border bg-secondary/30 p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Code2 className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Space Complexity</span>
-                      </div>
-                      <code className="text-lg text-primary">{problemData.spaceComplexity}</code>
-                    </div>
-                  </div>
-                </TabsContent>
+                </div>
+              </ScrollArea>
+            </TabsContent>
 
-                <TabsContent value="mistakes" className="m-0">
-                  <div>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />
-                      Common Mistakes to Avoid
-                    </h3>
-                    <ul className="space-y-3">
-                      {problemData.commonMistakes.map((mistake, idx) => (
-                        <li key={idx} className="flex items-start gap-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
-                          <span className="text-destructive font-bold">✗</span>
-                          <span className="text-sm">{mistake}</span>
-                        </li>
-                      ))}
-                    </ul>
+            <TabsContent value="approach" className="flex-1 m-0 min-h-0">
+              <ScrollArea className="h-full">
+                <div className="p-6 prose prose-sm dark:prose-invert max-w-none">
+                  <div className="whitespace-pre-wrap">{SAMPLE_PROBLEM.approach}</div>
+                </div>
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent value="mistakes" className="flex-1 m-0 min-h-0">
+              <ScrollArea className="h-full">
+                <div className="p-6 space-y-4">
+                  <h3 className="font-semibold text-lg">Common Mistakes to Avoid</h3>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                      <h4 className="font-medium text-destructive mb-2">❌ Using the same element twice</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Make sure to check that the complement's index is different from the current index.
+                      </p>
+                    </div>
+                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                      <h4 className="font-medium text-destructive mb-2">❌ Brute force O(n²) approach</h4>
+                      <p className="text-sm text-muted-foreground">
+                        While it works, interviewers expect the O(n) hash map solution for this classic problem.
+                      </p>
+                    </div>
+                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                      <h4 className="font-medium text-destructive mb-2">❌ Not handling negative numbers</h4>
+                      <p className="text-sm text-muted-foreground">
+                        The array can contain negative numbers. Your solution should handle them correctly.
+                      </p>
+                    </div>
                   </div>
-                </TabsContent>
-              </div>
-            </Tabs>
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Right Panel - Code Editor & AI Mentor */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Code Editor - Top */}
+          <div className="flex-1 flex flex-col min-h-0">
+            <CodeEditor
+              language={language}
+              onLanguageChange={handleLanguageChange}
+              code={code}
+              onCodeChange={setCode}
+              problemId={id || 'unknown'}
+            />
           </div>
 
-          {/* Right Panel - Code Editor & Chat */}
-          <div className="w-full lg:w-1/2 flex flex-col">
-            {/* Code Editor */}
-            <div className="flex-1 flex flex-col min-h-[400px]">
-              <div className="flex items-center justify-between border-b border-border bg-card/50 px-4 py-2">
-                <div className="flex items-center gap-2">
-                  <Code2 className="h-4 w-4" />
-                  <span className="font-medium text-sm">Code Editor</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select value={language} onValueChange={handleLanguageChange}>
-                    <SelectTrigger className="w-32 h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="python">Python</SelectItem>
-                      <SelectItem value="java">Java</SelectItem>
-                      <SelectItem value="cpp">C++</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Maximize2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className="flex-1 p-4 bg-[hsl(222,47%,8%)]">
-                <textarea
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="w-full h-full bg-transparent font-mono text-sm resize-none focus:outline-none text-foreground"
-                  spellCheck={false}
-                />
-              </div>
-              <div className="flex items-center justify-between border-t border-border bg-card/50 px-4 py-2">
-                <Button variant="outline" size="sm">
-                  <Play className="h-4 w-4 mr-2" />
-                  Run
-                </Button>
-                <Button size="sm" variant="success">
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Submit
-                </Button>
-              </div>
-            </div>
+          {/* Execution Panel */}
+          <div className="h-[200px] flex-shrink-0">
+            <ExecutionPanel
+              onRun={() => executeCode('run')}
+              onSubmit={() => executeCode('submit')}
+              isRunning={isRunning}
+              isSubmitting={isSubmitting}
+              lastResult={lastResult}
+            />
+          </div>
 
-            {/* AI Chat */}
-            <div className="h-80 border-t border-border flex flex-col">
-              <div className="flex items-center gap-2 border-b border-border bg-card/50 px-4 py-2">
-                <MessageSquare className="h-4 w-4 text-primary" />
-                <span className="font-medium text-sm">CodeCrack Mentor</span>
-                <Badge variant="secondary" className="text-xs">AI</Badge>
-              </div>
-              <div className="flex-1 overflow-auto p-4 space-y-4">
-                {chatHistory.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={cn(
-                      "max-w-[85%] rounded-lg p-3 text-sm",
-                      msg.role === "user"
-                        ? "ml-auto bg-primary text-primary-foreground"
-                        : "bg-secondary"
-                    )}
-                  >
-                    {msg.content}
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-border p-3">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={chatMessage}
-                    onChange={(e) => setChatMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                    placeholder="Ask for hints, explanations, or help..."
-                    className="flex-1 bg-secondary rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                  <Button size="icon" onClick={handleSendMessage}>
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
+          {/* AI Mentor - Bottom Right (collapsible) */}
+          <div className="h-[300px] border-t border-border flex-shrink-0">
+            <AIMentor
+              problemTitle={SAMPLE_PROBLEM.title}
+              problemDescription={SAMPLE_PROBLEM.description}
+              userCode={code}
+              language={language}
+              executionResult={lastResult ? {
+                verdict: lastResult.verdict,
+                error: lastResult.results?.[0]?.error,
+                actualOutput: lastResult.results?.[0]?.actualOutput,
+                expectedOutput: lastResult.results?.[0]?.expectedOutput,
+              } : undefined}
+            />
           </div>
         </div>
       </div>
