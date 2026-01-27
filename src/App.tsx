@@ -14,6 +14,9 @@ import Dashboard from "./pages/Dashboard";
 import LearningPath from "./pages/LearningPath";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Aptitude from "./pages/Aptitude";
+import Behavioral from "./pages/Behavioral";
+import GroupDiscussion from "./pages/GroupDiscussion";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +39,10 @@ const App = () => (
               <Route path="/companies/:id" element={<CompanyDetail />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/learning-path" element={<LearningPath />} />
+              <Route path="/aptitude" element={<Aptitude />} />
+              <Route path="/aptitude/:category/:topic" element={<Aptitude />} />
+              <Route path="/behavioral" element={<Behavioral />} />
+              <Route path="/group-discussion" element={<GroupDiscussion />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
