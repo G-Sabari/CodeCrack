@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Problems from "./pages/Problems";
 import ProblemDetail from "./pages/ProblemDetail";
@@ -33,16 +34,16 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/login" element={<Navigate to="/auth" replace />} />
               <Route path="/signup" element={<Navigate to="/auth" replace />} />
-              <Route path="/problems" element={<Problems />} />
-              <Route path="/problems/:id" element={<ProblemDetail />} />
-              <Route path="/companies" element={<Companies />} />
-              <Route path="/companies/:id" element={<CompanyDetail />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/learning-path" element={<LearningPath />} />
-              <Route path="/aptitude" element={<Aptitude />} />
-              <Route path="/aptitude/:category/:topic" element={<Aptitude />} />
-              <Route path="/behavioral" element={<Behavioral />} />
-              <Route path="/group-discussion" element={<GroupDiscussion />} />
+              <Route path="/problems" element={<ProtectedRoute><Problems /></ProtectedRoute>} />
+              <Route path="/problems/:id" element={<ProtectedRoute><ProblemDetail /></ProtectedRoute>} />
+              <Route path="/companies" element={<ProtectedRoute><Companies /></ProtectedRoute>} />
+              <Route path="/companies/:id" element={<ProtectedRoute><CompanyDetail /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/learning-path" element={<ProtectedRoute><LearningPath /></ProtectedRoute>} />
+              <Route path="/aptitude" element={<ProtectedRoute><Aptitude /></ProtectedRoute>} />
+              <Route path="/aptitude/:category/:topic" element={<ProtectedRoute><Aptitude /></ProtectedRoute>} />
+              <Route path="/behavioral" element={<ProtectedRoute><Behavioral /></ProtectedRoute>} />
+              <Route path="/group-discussion" element={<ProtectedRoute><GroupDiscussion /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -57,12 +58,25 @@ const stats = [
 ];
 
 export default function Index() {
+  const location = useLocation();
+  const [showAnimation, setShowAnimation] = useState(false);
+
+  // Check if we should show login animation
+  useEffect(() => {
+    const state = location.state as { showLoginAnimation?: boolean } | null;
+    if (state?.showLoginAnimation) {
+      setShowAnimation(true);
+      // Clear the state after reading it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background ${showAnimation ? 'animate-fade-in' : ''}`}>
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+      <section className={`relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden ${showAnimation ? 'animate-scale-in' : ''}`}>
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />

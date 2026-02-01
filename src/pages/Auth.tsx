@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { lovable } from '@/integrations/lovable';
 import { Button } from '@/components/ui/button';
@@ -29,8 +29,12 @@ const signupSchema = z.object({
 
 export default function Auth() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signIn, signUp } = useAuth();
   const { toast } = useToast();
+  
+  // Get the redirect destination from location state, default to landing page
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
   
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -47,12 +51,16 @@ export default function Auth() {
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
 
+  // Active tab state
+  const [activeTab, setActiveTab] = useState('login');
+
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      // Redirect to intended destination with animation flag
+      navigate(from, { state: { showLoginAnimation: true }, replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, from]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +107,8 @@ export default function Auth() {
         title: "Welcome back!",
         description: "You have successfully logged in.",
       });
-      navigate('/dashboard');
+      // Navigate to landing page with animation flag
+      navigate('/', { state: { showLoginAnimation: true }, replace: true });
     }
   };
 
@@ -146,9 +155,15 @@ export default function Auth() {
     } else {
       toast({
         title: "Account Created!",
-        description: "Welcome to CodeCrack. Let's start your interview prep journey!",
+        description: "Please login to continue your interview prep journey!",
       });
-      navigate('/dashboard');
+      // Switch to login tab after successful signup
+      setActiveTab('login');
+      // Clear signup form
+      setSignupFullName('');
+      setSignupEmail('');
+      setSignupPassword('');
+      setSignupConfirmPassword('');
     }
   };
 
@@ -187,7 +202,7 @@ export default function Auth() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
