@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { BackButton } from "@/components/ui/back-button";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -155,6 +156,11 @@ export default function Dashboard() {
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
+          {/* Back Button */}
+          <div className="mb-4">
+            <BackButton />
+          </div>
+
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
