@@ -32,7 +32,11 @@ import {
   Brain,
   Zap,
   BarChart3,
+  FileText,
 } from "lucide-react";
+import { GlobalSearch } from "@/components/dashboard/GlobalSearch";
+import { TopicChecklist } from "@/components/dashboard/TopicChecklist";
+import { PracticeCounter } from "@/components/dashboard/PracticeCounter";
 
 // Overall user stats
 const userStats = {
@@ -161,13 +165,47 @@ export default function Dashboard() {
             <BackButton />
           </div>
 
-          {/* Header */}
+          {/* Header with Search */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-            <p className="text-muted-foreground">
-              Your complete interview preparation progress at a glance
-            </p>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+                <p className="text-muted-foreground">
+                  Your complete interview preparation progress at a glance
+                </p>
+              </div>
+              <GlobalSearch />
+            </div>
           </div>
+
+          {/* Quick Access Links */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/pyq-database">
+                <FileText className="h-4 w-4 mr-2" />
+                PYQ Database
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/companies">
+                <Building2 className="h-4 w-4 mr-2" />
+                Company Database
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/learning-path">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Roadmaps
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/problems">
+                <Code className="h-4 w-4 mr-2" />
+                Practice Problems
+              </Link>
+            </Button>
+          </div>
+
 
           {/* Top Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -538,8 +576,20 @@ export default function Dashboard() {
                       Continue Learning Path
                     </Link>
                   </Button>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link to="/pyq-database">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Browse PYQ Database
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
+
+              {/* Practice Counter Widget */}
+              <PracticeCounter />
+
+              {/* Topic Checklist Widget */}
+              <TopicChecklist />
             </div>
           </div>
         </div>
