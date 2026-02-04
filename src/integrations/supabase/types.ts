@@ -17,30 +17,93 @@ export type Database = {
       companies: {
         Row: {
           category: Database["public"]["Enums"]["company_category"]
+          common_roles: string[] | null
           created_at: string
           description: string | null
+          difficulty_level: string | null
+          hiring_pattern: string[] | null
+          hr_round_details: string | null
           id: string
+          interview_experience_count: number | null
           logo_url: string | null
           name: string
+          online_test_details: string | null
+          preparation_tips: string[] | null
+          technical_rounds_details: string | null
           website_url: string | null
         }
         Insert: {
           category: Database["public"]["Enums"]["company_category"]
+          common_roles?: string[] | null
           created_at?: string
           description?: string | null
+          difficulty_level?: string | null
+          hiring_pattern?: string[] | null
+          hr_round_details?: string | null
           id?: string
+          interview_experience_count?: number | null
           logo_url?: string | null
           name: string
+          online_test_details?: string | null
+          preparation_tips?: string[] | null
+          technical_rounds_details?: string | null
           website_url?: string | null
         }
         Update: {
           category?: Database["public"]["Enums"]["company_category"]
+          common_roles?: string[] | null
           created_at?: string
           description?: string | null
+          difficulty_level?: string | null
+          hiring_pattern?: string[] | null
+          hr_round_details?: string | null
           id?: string
+          interview_experience_count?: number | null
           logo_url?: string | null
           name?: string
+          online_test_details?: string | null
+          preparation_tips?: string[] | null
+          technical_rounds_details?: string | null
           website_url?: string | null
+        }
+        Relationships: []
+      }
+      preparation_roadmaps: {
+        Row: {
+          created_at: string
+          daily_plan: Json
+          description: string | null
+          duration_days: number
+          id: string
+          target_track: string
+          title: string
+          topics: Json
+          updated_at: string
+          weekly_goals: Json
+        }
+        Insert: {
+          created_at?: string
+          daily_plan?: Json
+          description?: string | null
+          duration_days: number
+          id?: string
+          target_track?: string
+          title: string
+          topics?: Json
+          updated_at?: string
+          weekly_goals?: Json
+        }
+        Update: {
+          created_at?: string
+          daily_plan?: Json
+          description?: string | null
+          duration_days?: number
+          id?: string
+          target_track?: string
+          title?: string
+          topics?: Json
+          updated_at?: string
+          weekly_goals?: Json
         }
         Relationships: []
       }
@@ -197,6 +260,65 @@ export type Database = {
         }
         Relationships: []
       }
+      pyq_questions: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          difficulty: string
+          explanation: string | null
+          hints: string[] | null
+          id: string
+          question: string
+          question_type: string
+          solution: string | null
+          subtopic: string | null
+          tags: string[] | null
+          topic: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          difficulty?: string
+          explanation?: string | null
+          hints?: string[] | null
+          id?: string
+          question: string
+          question_type?: string
+          solution?: string | null
+          subtopic?: string | null
+          tags?: string[] | null
+          topic: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          difficulty?: string
+          explanation?: string | null
+          hints?: string[] | null
+          id?: string
+          question?: string
+          question_type?: string
+          solution?: string | null
+          subtopic?: string | null
+          tags?: string[] | null
+          topic?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pyq_questions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solved_problems: {
         Row: {
           id: string
@@ -288,6 +410,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_roadmap_progress: {
+        Row: {
+          completed_days: number[] | null
+          created_at: string
+          current_day: number | null
+          id: string
+          last_activity: string | null
+          roadmap_id: string | null
+          started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_days?: number[] | null
+          created_at?: string
+          current_day?: number | null
+          id?: string
+          last_activity?: string | null
+          roadmap_id?: string | null
+          started_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_days?: number[] | null
+          created_at?: string
+          current_day?: number | null
+          id?: string
+          last_activity?: string | null
+          roadmap_id?: string | null
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roadmap_progress_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "preparation_roadmaps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -17,9 +17,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 const navLinks = [
   { name: "Problems", href: "/problems" },
   { name: "Companies", href: "/companies" },
+  { name: "PYQ", href: "/pyq-database" },
   { name: "Aptitude", href: "/aptitude" },
   { name: "HR Interview", href: "/behavioral" },
-  { name: "Group Discussion", href: "/group-discussion" },
   { name: "Learning Path", href: "/learning-path" },
   { name: "Dashboard", href: "/dashboard" },
 ];

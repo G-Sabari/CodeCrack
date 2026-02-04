@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import Aptitude from "./pages/Aptitude";
 import Behavioral from "./pages/Behavioral";
 import GroupDiscussion from "./pages/GroupDiscussion";
+import PYQDatabase from "./pages/PYQDatabase";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/aptitude/:category/:topic" element={<ProtectedRoute><Aptitude /></ProtectedRoute>} />
               <Route path="/behavioral" element={<ProtectedRoute><Behavioral /></ProtectedRoute>} />
               <Route path="/group-discussion" element={<ProtectedRoute><GroupDiscussion /></ProtectedRoute>} />
+              <Route path="/pyq-database" element={<ProtectedRoute><PYQDatabase /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
