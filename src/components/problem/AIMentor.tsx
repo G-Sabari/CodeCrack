@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Bot, User, Lightbulb, Code2, Mic, Building2 } from 'lucide-react';
+import { Send, Loader2, Bot, User, Lightbulb, Code2, Mic, Building2, Sparkles, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -34,10 +34,10 @@ interface AIMentorProps {
 type MentorMode = 'hint' | 'explain' | 'interview' | 'company-feedback';
 
 const MODE_OPTIONS = [
-  { value: 'hint', label: 'Hint Mode', icon: Lightbulb, description: 'Get subtle hints' },
-  { value: 'explain', label: 'Explain Code', icon: Code2, description: 'Analyze your code' },
-  { value: 'interview', label: 'Interview Sim', icon: Mic, description: 'Practice interview' },
-  { value: 'company-feedback', label: 'Company Specific', icon: Building2, description: 'Company feedback' },
+  { value: 'hint', label: 'Hint Mode', icon: Lightbulb, description: 'Get subtle hints', color: 'text-[hsl(var(--warning))]' },
+  { value: 'explain', label: 'Explain Code', icon: Code2, description: 'Analyze your code', color: 'text-primary' },
+  { value: 'interview', label: 'Interview Sim', icon: Mic, description: 'Practice interview', color: 'text-[hsl(280,65%,60%)]' },
+  { value: 'company-feedback', label: 'Company Mode', icon: Building2, description: 'Company feedback', color: 'text-[hsl(var(--success))]' },
 ];
 
 const COMPANY_OPTIONS = [
@@ -54,7 +54,7 @@ export function AIMentor({
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Hi! I'm CodeCrack Mentor. I'm here to help you solve "${problemTitle}". I won't give you direct answers, but I'll guide you through the problem-solving process.\n\nSelect a mode above and ask me anything about the problem!`,
+      content: `Hi! I'm your CodeCrack AI Mentor. I'm here to help you solve "${problemTitle}". I won't give you direct answers, but I'll guide you through the problem-solving process.\n\nSelect a mode above and ask me anything about the problem!`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -179,20 +179,29 @@ export function AIMentor({
     }
   };
 
+  const currentMode = MODE_OPTIONS.find(m => m.value === mode);
+
   return (
-    <div className="flex flex-col h-full bg-card">
-      {/* Mode selection bar */}
-      <div className="p-2 border-b border-border flex items-center gap-2 flex-shrink-0">
+    <div className="flex flex-col h-full bg-gradient-to-b from-card/30 to-background/20">
+      {/* Premium Mode Selection Bar */}
+      <div className="p-3 border-b border-border/30 flex items-center gap-3 flex-shrink-0 bg-card/30 backdrop-blur-sm">
         <Select value={mode} onValueChange={(v) => setMode(v as MentorMode)}>
-          <SelectTrigger className="w-[150px] h-8">
-            <SelectValue />
+          <SelectTrigger className="w-[160px] h-9 bg-secondary/50 border-border/50 hover:border-primary/30 transition-colors">
+            <SelectValue>
+              {currentMode && (
+                <span className="flex items-center gap-2">
+                  <currentMode.icon className={cn("h-4 w-4", currentMode.color)} />
+                  <span>{currentMode.label}</span>
+                </span>
+              )}
+            </SelectValue>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-card/95 backdrop-blur-xl border-border/50">
             {MODE_OPTIONS.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 <div className="flex items-center gap-2">
-                  <opt.icon className="h-4 w-4" />
-                  {opt.label}
+                  <opt.icon className={cn("h-4 w-4", opt.color)} />
+                  <span>{opt.label}</span>
                 </div>
               </SelectItem>
             ))}
@@ -200,10 +209,10 @@ export function AIMentor({
         </Select>
         {mode === 'company-feedback' && (
           <Select value={company} onValueChange={setCompany}>
-            <SelectTrigger className="w-[110px] h-8">
+            <SelectTrigger className="w-[120px] h-9 bg-secondary/50 border-border/50 hover:border-primary/30 transition-colors">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card/95 backdrop-blur-xl border-border/50">
               {COMPANY_OPTIONS.map((c) => (
                 <SelectItem key={c} value={c}>
                   {c}
@@ -214,54 +223,59 @@ export function AIMentor({
         )}
       </div>
 
-      {/* Messages */}
+      {/* Premium Messages Area */}
       <ScrollArea className="flex-1" ref={scrollRef}>
         <div className="p-4 space-y-4">
           {messages.map((message, index) => (
             <div
               key={index}
               className={cn(
-                'flex gap-3',
+                'flex gap-3 animate-fade-in',
                 message.role === 'user' ? 'justify-end' : 'justify-start'
               )}
+              style={{ animationDelay: `${index * 0.05}s` }}
             >
               {message.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Bot className="h-4 w-4 text-primary" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/20 to-[hsl(280,65%,60%)]/20 border border-primary/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_hsl(var(--primary)/0.2)]">
+                  <Brain className="h-4 w-4 text-primary" />
                 </div>
               )}
               <div
                 className={cn(
-                  'max-w-[80%] rounded-lg px-4 py-2 text-sm',
+                  'max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-lg transition-all duration-300',
                   message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary'
+                    ? 'bg-gradient-to-r from-primary to-[hsl(200,80%,50%)] text-primary-foreground rounded-br-md'
+                    : 'bg-secondary/50 backdrop-blur-sm border border-border/30 rounded-bl-md hover:bg-secondary/70'
                 )}
               >
-                <pre className="whitespace-pre-wrap font-sans">{message.content}</pre>
+                <pre className="whitespace-pre-wrap font-sans leading-relaxed">{message.content}</pre>
               </div>
               {message.role === 'user' && (
-                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                  <User className="h-4 w-4" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-secondary to-secondary/50 border border-border/30 flex items-center justify-center flex-shrink-0">
+                  <User className="h-4 w-4 text-foreground" />
                 </div>
               )}
             </div>
           ))}
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot className="h-4 w-4 text-primary" />
+            <div className="flex gap-3 animate-fade-in">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/20 to-[hsl(280,65%,60%)]/20 border border-primary/20 flex items-center justify-center shadow-[0_0_15px_hsl(var(--primary)/0.2)]">
+                <Brain className="h-4 w-4 text-primary animate-pulse" />
               </div>
-              <div className="bg-secondary rounded-lg px-4 py-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
+              <div className="bg-secondary/50 backdrop-blur-sm border border-border/30 rounded-2xl rounded-bl-md px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">Thinking...</span>
+                  <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+                </div>
               </div>
             </div>
           )}
         </div>
       </ScrollArea>
 
-      {/* Input */}
-      <div className="p-3 border-t border-border">
+      {/* Premium Input Area */}
+      <div className="p-3 border-t border-border/30 bg-card/30 backdrop-blur-sm">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -275,9 +289,14 @@ export function AIMentor({
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about the problem..."
             disabled={isLoading}
-            className="flex-1"
+            className="flex-1 bg-secondary/50 border-border/50 focus:border-primary/50 transition-colors"
           />
-          <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+          <Button 
+            type="submit" 
+            size="icon" 
+            disabled={isLoading || !input.trim()}
+            className="bg-gradient-to-r from-primary to-[hsl(200,80%,50%)] hover:from-primary/90 hover:to-[hsl(200,80%,50%)]/90 shadow-[0_0_15px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_20px_hsl(var(--primary)/0.4)] transition-all duration-300"
+          >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -285,6 +304,9 @@ export function AIMentor({
             )}
           </Button>
         </form>
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          Press Enter to send • Ctrl+Enter for code run
+        </p>
       </div>
     </div>
   );

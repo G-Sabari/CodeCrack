@@ -11,7 +11,10 @@ import {
   Building2,
   Tag,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Sparkles,
+  Zap,
+  Brain
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -117,15 +120,15 @@ public:
 };
 
 const DIFFICULTY_STYLES = {
-  Easy: 'bg-success/10 text-success border-success/20',
-  Medium: 'bg-warning/10 text-warning border-warning/20',
-  Hard: 'bg-destructive/10 text-destructive border-destructive/20',
+  Easy: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] border-[hsl(var(--success))]/20 shadow-[0_0_10px_hsl(var(--success)/0.2)]',
+  Medium: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))] border-[hsl(var(--warning))]/20 shadow-[0_0_10px_hsl(var(--warning)/0.2)]',
+  Hard: 'bg-destructive/10 text-destructive border-destructive/20 shadow-[0_0_10px_hsl(var(--destructive)/0.2)]',
 };
 
 const FREQUENCY_LABELS = {
   high: { label: '🔴 Frequently Asked', color: 'text-destructive' },
-  medium: { label: '🟡 Occasionally Asked', color: 'text-warning' },
-  low: { label: '🟢 Rarely Asked', color: 'text-success' },
+  medium: { label: '🟡 Occasionally Asked', color: 'text-[hsl(var(--warning))]' },
+  low: { label: '🟢 Rarely Asked', color: 'text-[hsl(var(--success))]' },
 };
 
 export default function ProblemDetail() {
@@ -230,30 +233,48 @@ export default function ProblemDetail() {
 
   return (
     <div className={cn(
-      'h-screen flex flex-col bg-background',
+      'h-screen flex flex-col bg-background relative overflow-hidden',
       isFullscreen && 'fixed inset-0 z-50'
     )}>
-      {/* Header */}
-      <header className="h-14 border-b border-border flex items-center justify-between px-4 bg-card flex-shrink-0">
+      {/* Subtle background effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/3 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[hsl(280,65%,60%)]/3 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Premium Header */}
+      <header className="h-14 border-b border-border/50 flex items-center justify-between px-4 bg-card/80 backdrop-blur-xl flex-shrink-0 relative z-10">
         <div className="flex items-center gap-4">
           <Link to="/problems">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+            <Button variant="ghost" size="sm" className="hover:bg-primary/10 transition-colors group">
+              <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Problems
             </Button>
           </Link>
-          <Separator orientation="vertical" className="h-6" />
+          <Separator orientation="vertical" className="h-6 bg-border/50" />
           <div className="flex items-center gap-3">
-            <h1 className="font-semibold">{SAMPLE_PROBLEM.title}</h1>
-            <Badge variant="outline" className={DIFFICULTY_STYLES[SAMPLE_PROBLEM.difficulty]}>
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-[hsl(280,65%,60%)]/20 border border-primary/20">
+                <Zap className="h-4 w-4 text-primary" />
+              </div>
+              <h1 className="font-semibold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+                {SAMPLE_PROBLEM.title}
+              </h1>
+            </div>
+            <Badge variant="outline" className={cn("transition-all duration-300", DIFFICULTY_STYLES[SAMPLE_PROBLEM.difficulty])}>
               {SAMPLE_PROBLEM.difficulty}
             </Badge>
-            <span className={cn('text-sm', FREQUENCY_LABELS[SAMPLE_PROBLEM.frequency].color)}>
+            <span className={cn('text-sm font-medium', FREQUENCY_LABELS[SAMPLE_PROBLEM.frequency].color)}>
               {FREQUENCY_LABELS[SAMPLE_PROBLEM.frequency].label}
             </span>
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={toggleFullscreen}>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={toggleFullscreen}
+          className="hover:bg-primary/10 transition-colors"
+        >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
         </Button>
       </header>
@@ -263,115 +284,166 @@ export default function ProblemDetail() {
         {/* Left Panel - Problem Description */}
         <ResizablePanel defaultSize={40} minSize={25} maxSize={60}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent px-4 h-11 flex-shrink-0">
-              <TabsTrigger value="description" className="data-[state=active]:bg-secondary">
+            <TabsList className="w-full justify-start rounded-none border-b border-border/50 bg-card/50 backdrop-blur-sm px-4 h-12 flex-shrink-0">
+              <TabsTrigger 
+                value="description" 
+                className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none transition-all duration-300"
+              >
                 <BookOpen className="h-4 w-4 mr-2" />
                 Description
               </TabsTrigger>
-              <TabsTrigger value="approach" className="data-[state=active]:bg-secondary">
+              <TabsTrigger 
+                value="approach" 
+                className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none transition-all duration-300"
+              >
                 <Lightbulb className="h-4 w-4 mr-2" />
                 Approach
               </TabsTrigger>
-              <TabsTrigger value="mistakes" className="data-[state=active]:bg-secondary">
+              <TabsTrigger 
+                value="mistakes" 
+                className="data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive data-[state=active]:shadow-none transition-all duration-300"
+              >
                 <AlertCircle className="h-4 w-4 mr-2" />
-                Common Mistakes
+                Mistakes
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="description" className="flex-1 m-0 min-h-0">
+            <TabsContent value="description" className="flex-1 m-0 min-h-0 bg-gradient-to-b from-card/30 to-background/50">
               <ScrollArea className="h-full">
-                <div className="p-6 space-y-6">
-                  {/* Tags & Companies */}
+                <div className="p-6 space-y-6 animate-fade-in">
+                  {/* Tags & Companies - Premium Badges */}
                   <div className="flex flex-wrap gap-2">
                     {SAMPLE_PROBLEM.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="gap-1">
-                        <Tag className="h-3 w-3" />
+                      <Badge 
+                        key={tag} 
+                        variant="secondary" 
+                        className="gap-1.5 bg-secondary/50 hover:bg-secondary/80 transition-colors border border-border/30"
+                      >
+                        <Tag className="h-3 w-3 text-primary" />
                         {tag}
                       </Badge>
                     ))}
                     {SAMPLE_PROBLEM.companies.slice(0, 3).map((company) => (
-                      <Badge key={company} variant="outline" className="gap-1">
+                      <Badge 
+                        key={company} 
+                        variant="outline" 
+                        className="gap-1.5 hover:border-primary/50 transition-colors"
+                      >
                         <Building2 className="h-3 w-3" />
                         {company}
                       </Badge>
                     ))}
+                    {SAMPLE_PROBLEM.companies.length > 3 && (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        +{SAMPLE_PROBLEM.companies.length - 3} more
+                      </Badge>
+                    )}
                   </div>
 
-                  {/* Description */}
+                  {/* Description with premium styling */}
                   <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <p className="whitespace-pre-wrap">{SAMPLE_PROBLEM.description}</p>
+                    <p className="whitespace-pre-wrap leading-relaxed">{SAMPLE_PROBLEM.description}</p>
                   </div>
 
-                  {/* Examples */}
+                  {/* Examples with glassmorphism */}
                   <div className="space-y-4">
-                    <h3 className="font-semibold">Examples</h3>
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      Examples
+                    </h3>
                     {SAMPLE_PROBLEM.examples.map((example, index) => (
-                      <div key={index} className="bg-secondary/50 rounded-lg p-4 space-y-2">
-                        <div className="font-medium text-sm">Example {index + 1}:</div>
-                        <div className="space-y-1 text-sm font-mono">
-                          <div><span className="text-muted-foreground">Input:</span> {example.input}</div>
-                          <div><span className="text-muted-foreground">Output:</span> {example.output}</div>
-                          {example.explanation && (
-                            <div className="text-muted-foreground">{example.explanation}</div>
-                          )}
+                      <div 
+                        key={index} 
+                        className="relative group"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-[hsl(280,65%,60%)]/5 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="relative bg-secondary/30 backdrop-blur-sm rounded-xl p-4 space-y-2 border border-border/30 hover:border-primary/20 transition-colors">
+                          <div className="font-medium text-sm text-primary">Example {index + 1}</div>
+                          <div className="space-y-2 text-sm font-mono">
+                            <div className="flex gap-2">
+                              <span className="text-muted-foreground min-w-[60px]">Input:</span>
+                              <code className="text-foreground">{example.input}</code>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="text-muted-foreground min-w-[60px]">Output:</span>
+                              <code className="text-[hsl(var(--success))]">{example.output}</code>
+                            </div>
+                            {example.explanation && (
+                              <div className="text-muted-foreground pt-1 text-xs italic border-t border-border/30 mt-2">
+                                {example.explanation}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
 
                   {/* Constraints */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <h3 className="font-semibold">Constraints</h3>
-                    <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+                    <ul className="space-y-1.5">
                       {SAMPLE_PROBLEM.constraints.map((constraint, index) => (
-                        <li key={index} className="font-mono">{constraint}</li>
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <span className="text-primary mt-1">•</span>
+                          <code className="font-mono text-muted-foreground">{constraint}</code>
+                        </li>
                       ))}
                     </ul>
                   </div>
 
-                  {/* Complexity */}
-                  <div className="flex gap-4 text-sm">
+                  {/* Complexity with glow */}
+                  <div className="flex gap-4 text-sm p-4 rounded-xl bg-gradient-to-r from-primary/5 to-[hsl(200,80%,60%)]/5 border border-primary/10">
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <Clock className="h-4 w-4 text-primary" />
                       <span className="text-muted-foreground">Time:</span>
-                      <code className="bg-secondary px-2 py-0.5 rounded">{SAMPLE_PROBLEM.complexity.time}</code>
+                      <code className="bg-secondary/50 px-2 py-0.5 rounded font-semibold text-primary">{SAMPLE_PROBLEM.complexity.time}</code>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">Space:</span>
-                      <code className="bg-secondary px-2 py-0.5 rounded">{SAMPLE_PROBLEM.complexity.space}</code>
+                      <code className="bg-secondary/50 px-2 py-0.5 rounded font-semibold text-[hsl(280,65%,60%)]">{SAMPLE_PROBLEM.complexity.space}</code>
                     </div>
                   </div>
                 </div>
               </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="approach" className="flex-1 m-0 min-h-0">
+            <TabsContent value="approach" className="flex-1 m-0 min-h-0 bg-gradient-to-b from-card/30 to-background/50">
               <ScrollArea className="h-full">
-                <div className="p-6 prose prose-sm dark:prose-invert max-w-none">
+                <div className="p-6 prose prose-sm dark:prose-invert max-w-none animate-fade-in">
                   <div className="whitespace-pre-wrap">{SAMPLE_PROBLEM.approach}</div>
                 </div>
               </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="mistakes" className="flex-1 m-0 min-h-0">
+            <TabsContent value="mistakes" className="flex-1 m-0 min-h-0 bg-gradient-to-b from-card/30 to-background/50">
               <ScrollArea className="h-full">
-                <div className="p-6 space-y-4">
-                  <h3 className="font-semibold text-lg">Common Mistakes to Avoid</h3>
+                <div className="p-6 space-y-4 animate-fade-in">
+                  <h3 className="font-semibold text-lg flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-destructive" />
+                    Common Mistakes to Avoid
+                  </h3>
                   <div className="space-y-3">
-                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                      <h4 className="font-medium text-destructive mb-2">❌ Using the same element twice</h4>
+                    <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl hover:bg-destructive/10 transition-colors">
+                      <h4 className="font-medium text-destructive mb-2 flex items-center gap-2">
+                        <span className="text-lg">❌</span> Using the same element twice
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         Make sure to check that the complement's index is different from the current index.
                       </p>
                     </div>
-                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                      <h4 className="font-medium text-destructive mb-2">❌ Brute force O(n²) approach</h4>
+                    <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl hover:bg-destructive/10 transition-colors">
+                      <h4 className="font-medium text-destructive mb-2 flex items-center gap-2">
+                        <span className="text-lg">❌</span> Brute force O(n²) approach
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         While it works, interviewers expect the O(n) hash map solution for this classic problem.
                       </p>
                     </div>
-                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                      <h4 className="font-medium text-destructive mb-2">❌ Not handling negative numbers</h4>
+                    <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl hover:bg-destructive/10 transition-colors">
+                      <h4 className="font-medium text-destructive mb-2 flex items-center gap-2">
+                        <span className="text-lg">❌</span> Not handling negative numbers
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         The array can contain negative numbers. Your solution should handle them correctly.
                       </p>
@@ -383,7 +455,7 @@ export default function ProblemDetail() {
           </Tabs>
         </ResizablePanel>
 
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle className="bg-border/30 hover:bg-primary/20 transition-colors" />
 
         {/* Right Panel - Code Editor & Execution & AI Mentor */}
         <ResizablePanel defaultSize={60} minSize={40}>
@@ -399,7 +471,7 @@ export default function ProblemDetail() {
               />
             </ResizablePanel>
 
-            <ResizableHandle withHandle />
+            <ResizableHandle withHandle className="bg-border/30 hover:bg-primary/20 transition-colors" />
 
             {/* Execution Panel */}
             <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
@@ -412,7 +484,7 @@ export default function ProblemDetail() {
               />
             </ResizablePanel>
 
-            <ResizableHandle withHandle />
+            <ResizableHandle withHandle className="bg-border/30 hover:bg-primary/20 transition-colors" />
 
             {/* AI Mentor - Collapsible */}
             <ResizablePanel 
@@ -422,19 +494,24 @@ export default function ProblemDetail() {
               collapsible={true}
               collapsedSize={8}
             >
-              <div className="h-full flex flex-col">
-                {/* Mentor Toggle Header */}
+              <div className="h-full flex flex-col bg-gradient-to-b from-card/50 to-background/30">
+                {/* Premium Mentor Toggle Header */}
                 <button
                   onClick={() => setIsMentorExpanded(!isMentorExpanded)}
-                  className="flex items-center justify-between px-4 py-2 bg-card border-b border-border hover:bg-secondary/50 transition-colors"
+                  className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-primary/5 via-card/80 to-[hsl(280,65%,60%)]/5 border-b border-border/30 hover:from-primary/10 hover:to-[hsl(280,65%,60%)]/10 transition-all duration-300"
                 >
                   <span className="font-medium text-sm flex items-center gap-2">
-                    🤖 CodeCrack Mentor
+                    <div className="p-1 rounded-md bg-gradient-to-br from-primary/20 to-[hsl(280,65%,60%)]/20">
+                      <Brain className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="bg-gradient-to-r from-primary to-[hsl(280,65%,60%)] bg-clip-text text-transparent font-semibold">
+                      CodeCrack AI Mentor
+                    </span>
                   </span>
                   {isMentorExpanded ? (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
                   )}
                 </button>
                 {/* Mentor Content */}
@@ -447,12 +524,7 @@ export default function ProblemDetail() {
                     problemDescription={SAMPLE_PROBLEM.description}
                     userCode={code}
                     language={language}
-                    executionResult={lastResult ? {
-                      verdict: lastResult.verdict,
-                      error: lastResult.results?.[0]?.error,
-                      actualOutput: lastResult.results?.[0]?.actualOutput,
-                      expectedOutput: lastResult.results?.[0]?.expectedOutput,
-                    } : undefined}
+                    executionResult={lastResult}
                   />
                 </div>
               </div>
