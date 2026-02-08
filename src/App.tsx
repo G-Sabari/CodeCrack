@@ -16,6 +16,7 @@ import LearningPath from "./pages/LearningPath";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Aptitude from "./pages/Aptitude";
+import AptitudeQuiz from "./pages/AptitudeQuiz";
 import Behavioral from "./pages/Behavioral";
 import GroupDiscussion from "./pages/GroupDiscussion";
 import PYQDatabase from "./pages/PYQDatabase";
@@ -42,6 +43,9 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/learning-path" element={<ProtectedRoute><LearningPath /></ProtectedRoute>} />
               <Route path="/aptitude" element={<ProtectedRoute><Aptitude /></ProtectedRoute>} />
+              <Route path="/aptitude/quiz" element={<ProtectedRoute><AptitudeQuiz /></ProtectedRoute>} />
+              <Route path="/aptitude/quiz/:categoryId" element={<ProtectedRoute><AptitudeQuiz /></ProtectedRoute>} />
+              <Route path="/aptitude/quiz/:categoryId/:topicId" element={<ProtectedRoute><AptitudeQuiz /></ProtectedRoute>} />
               <Route path="/aptitude/:category/:topic" element={<ProtectedRoute><Aptitude /></ProtectedRoute>} />
               <Route path="/behavioral" element={<ProtectedRoute><Behavioral /></ProtectedRoute>} />
               <Route path="/group-discussion" element={<ProtectedRoute><GroupDiscussion /></ProtectedRoute>} />
