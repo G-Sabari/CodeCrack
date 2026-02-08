@@ -236,8 +236,14 @@ export default function Aptitude() {
                 </Card>
               ))}
             </div>
-            <div className="text-center mt-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
               <Button asChild>
+                <Link to="/aptitude/quiz">
+                  🎯 Practice Quiz Center
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
                 <Link to="/aptitude/practice">
                   View All Questions
                   <ArrowRight className="h-4 w-4 ml-2" />

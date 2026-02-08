@@ -168,4 +168,56 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Celebration animations for quiz results */
+  @keyframes confetti {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes sparkle {
+    0% {
+      transform: scale(0) rotate(0deg);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.2) rotate(180deg);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes celebrate {
+    0% {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes flicker {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
 }
