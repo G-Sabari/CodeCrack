@@ -20,6 +20,8 @@ import AptitudeQuiz from "./pages/AptitudeQuiz";
 import Behavioral from "./pages/Behavioral";
 import GroupDiscussion from "./pages/GroupDiscussion";
 import PYQDatabase from "./pages/PYQDatabase";
+import WeeklyContest from "./pages/WeeklyContest";
+import Leaderboard from "./pages/Leaderboard";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +52,8 @@ const App = () => (
               <Route path="/behavioral" element={<ProtectedRoute><Behavioral /></ProtectedRoute>} />
               <Route path="/group-discussion" element={<ProtectedRoute><GroupDiscussion /></ProtectedRoute>} />
               <Route path="/pyq-database" element={<ProtectedRoute><PYQDatabase /></ProtectedRoute>} />
+              <Route path="/contest" element={<ProtectedRoute><WeeklyContest /></ProtectedRoute>} />
+              <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

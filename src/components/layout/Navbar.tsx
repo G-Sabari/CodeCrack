@@ -16,11 +16,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const navLinks = [
   { name: "Problems", href: "/problems" },
+  { name: "Contest", href: "/contest" },
   { name: "Companies", href: "/companies" },
   { name: "PYQ", href: "/pyq-database" },
   { name: "Aptitude", href: "/aptitude" },
   { name: "HR Interview", href: "/behavioral" },
-  { name: "Learning Path", href: "/learning-path" },
+  { name: "Leaderboard", href: "/leaderboard" },
   { name: "Dashboard", href: "/dashboard" },
 ];
 
