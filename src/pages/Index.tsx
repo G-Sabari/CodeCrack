@@ -7,34 +7,34 @@ import { Footer } from "@/components/layout/Footer";
 import { BackgroundOrbs, StaggerContainer, StaggerItem, HoverCard } from "@/components/layout/AnimatedLayout";
 import {
   Code2, Building2, Brain, Target, Users, Zap, BookOpen,
-  MessageSquare, ArrowRight, CheckCircle2, Trophy, Sparkles,
-} from "lucide-react";
+  MessageSquare, ArrowRight, CheckCircle2, Trophy, Sparkles } from
+"lucide-react";
 
 const features = [
-  { icon: Code2, title: "Interview-Style Problems", description: "Practice with real questions asked in TCS, Infosys, Zoho, Amazon, Google & more." },
-  { icon: Building2, title: "Company-Wise Questions", description: "Filter problems by company with round-wise patterns and frequency indicators." },
-  { icon: Brain, title: "AI Mentor", description: "Get hints, explanations, and interview simulation from our AI chatbot mentor." },
-  { icon: Target, title: "Learning Paths", description: "Follow structured 30, 60, or 90-day plans for service and product companies." },
-];
+{ icon: Code2, title: "Interview-Style Problems", description: "Practice with real questions asked in TCS, Infosys, Zoho, Amazon, Google & more." },
+{ icon: Building2, title: "Company-Wise Questions", description: "Filter problems by company with round-wise patterns and frequency indicators." },
+{ icon: Brain, title: "AI Mentor", description: "Get hints, explanations, and interview simulation from our AI chatbot mentor." },
+{ icon: Target, title: "Learning Paths", description: "Follow structured 30, 60, or 90-day plans for service and product companies." }];
+
 
 const companies = [
-  { name: "TCS", type: "service" }, { name: "Infosys", type: "service" },
-  { name: "Wipro", type: "service" }, { name: "Zoho", type: "service" },
-  { name: "Amazon", type: "product" }, { name: "Google", type: "product" },
-  { name: "Microsoft", type: "product" }, { name: "Flipkart", type: "product" },
-];
+{ name: "TCS", type: "service" }, { name: "Infosys", type: "service" },
+{ name: "Wipro", type: "service" }, { name: "Zoho", type: "service" },
+{ name: "Amazon", type: "product" }, { name: "Google", type: "product" },
+{ name: "Microsoft", type: "product" }, { name: "Flipkart", type: "product" }];
+
 
 const stats = [
-  { value: "500+", label: "Interview Problems" }, { value: "50+", label: "Companies" },
-  { value: "15+", label: "Topic Patterns" }, { value: "10K+", label: "Students" },
-];
+{ value: "500+", label: "Interview Problems" }, { value: "50+", label: "Companies" },
+{ value: "15+", label: "Topic Patterns" }, { value: "10K+", label: "Students" }];
+
 
 export default function Index() {
   const location = useLocation();
   const [showAnimation, setShowAnimation] = useState(false);
 
   useEffect(() => {
-    const state = location.state as { showLoginAnimation?: boolean } | null;
+    const state = location.state as {showLoginAnimation?: boolean;} | null;
     if (state?.showLoginAnimation) {
       setShowAnimation(true);
       window.history.replaceState({}, document.title);
@@ -55,14 +55,14 @@ export default function Index() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="mx-auto max-w-4xl text-center"
-          >
+            className="mx-auto max-w-4xl text-center">
+
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.15, duration: 0.4 }}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.08)] px-4 py-1.5 text-sm text-primary neon-border"
-            >
+              className="mb-6 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.08)] px-4 py-1.5 text-sm text-primary neon-border">
+
               <Sparkles className="h-4 w-4" />
               <span>v1.0 Now Live — Premium Placement Prep</span>
             </motion.div>
@@ -83,8 +83,8 @@ export default function Index() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.4 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            >
+              className="flex flex-col sm:flex-row items-center justify-center gap-4">
+
               <Button variant="hero" size="xl" asChild>
                 <Link to="/problems">
                   Get Started <ArrowRight className="ml-2 h-5 w-5" />
@@ -105,14 +105,14 @@ export default function Index() {
       <section className="py-12 border-y border-border/50 glass-panel">
         <div className="container mx-auto px-4">
           <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-8" delay={0.2}>
-            {stats.map((stat) => (
-              <StaggerItem key={stat.label}>
+            {stats.map((stat) =>
+            <StaggerItem key={stat.label}>
                 <div className="text-center">
                   <div className="text-3xl md:text-4xl font-bold gradient-text">{stat.value}</div>
                   <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
                 </div>
               </StaggerItem>
-            ))}
+            )}
           </StaggerContainer>
         </div>
       </section>
@@ -125,8 +125,8 @@ export default function Index() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-16"
-          >
+            className="text-center mb-16">
+
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Why <span className="gradient-text">CodeCrack</span>?
             </h2>
@@ -136,15 +136,15 @@ export default function Index() {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, i) => (
-              <HoverCard key={feature.title}>
+            {features.map((feature, i) =>
+            <HoverCard key={feature.title}>
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1, duration: 0.4 }}
-                  className="group relative rounded-xl border border-border/50 glass-card p-6 transition-all duration-300 hover:border-[hsl(var(--primary)/0.4)] hover:neon-glow"
-                >
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.4 }}
+                className="group relative rounded-xl border border-border/50 glass-card p-6 transition-all duration-300 hover:border-[hsl(var(--primary)/0.4)] hover:neon-glow">
+
                   <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[hsl(var(--primary)/0.1)] text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
                     <feature.icon className="h-6 w-6" />
                   </div>
@@ -152,7 +152,7 @@ export default function Index() {
                   <p className="text-sm text-muted-foreground">{feature.description}</p>
                 </motion.div>
               </HoverCard>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -164,8 +164,8 @@ export default function Index() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
-          >
+            className="text-center mb-16">
+
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Prepare for <span className="gradient-text">Top Companies</span>
             </h2>
@@ -175,23 +175,23 @@ export default function Index() {
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            {companies.map((company, i) => (
-              <motion.div
-                key={company.name}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-              >
+            {companies.map((company, i) =>
+            <motion.div
+              key={company.name}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}>
+
                 <Link
-                  to={`/companies/${company.name.toLowerCase()}`}
-                  className="group flex items-center justify-center gap-3 rounded-xl border border-border/50 glass-card p-6 transition-all duration-300 hover:border-[hsl(var(--primary)/0.4)] hover:shadow-[var(--shadow-glow)]"
-                >
+                to={`/companies/${company.name.toLowerCase()}`}
+                className="group flex items-center justify-center gap-3 rounded-xl border border-border/50 glass-card p-6 transition-all duration-300 hover:border-[hsl(var(--primary)/0.4)] hover:shadow-[var(--shadow-glow)]">
+
                   <Building2 className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   <span className="font-medium group-hover:text-primary transition-colors">{company.name}</span>
                 </Link>
               </motion.div>
-            ))}
+            )}
           </div>
 
           <div className="mt-10 text-center">
@@ -211,8 +211,8 @@ export default function Index() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
-          >
+            className="text-center mb-16">
+
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               How <span className="gradient-text">CodeCrack</span> Works
             </h2>
@@ -223,18 +223,18 @@ export default function Index() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
-              { step: "01", icon: BookOpen, title: "Learn the Pattern", description: "Understand the thought process and approach before writing any code." },
-              { step: "02", icon: Code2, title: "Practice Problems", description: "Solve interview-style problems with real-time feedback and hints." },
-              { step: "03", icon: MessageSquare, title: "Get AI Mentoring", description: "Ask questions, get explanations, and simulate mock interviews." },
-            ].map((item, i) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="relative"
-              >
+            { step: "01", icon: BookOpen, title: "Learn the Pattern", description: "Understand the thought process and approach before writing any code." },
+            { step: "02", icon: Code2, title: "Practice Problems", description: "Solve interview-style problems with real-time feedback and hints." },
+            { step: "03", icon: MessageSquare, title: "Get AI Mentoring", description: "Ask questions, get explanations, and simulate mock interviews." }].
+            map((item, i) =>
+            <motion.div
+              key={item.step}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.15 }}
+              className="relative">
+
                 <div className="text-6xl font-bold gradient-text opacity-20 mb-4">{item.step}</div>
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[hsl(var(--primary)/0.1)] text-primary mb-4">
                   <item.icon className="h-6 w-6" />
@@ -242,7 +242,7 @@ export default function Index() {
                 <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                 <p className="text-muted-foreground">{item.description}</p>
               </motion.div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -254,8 +254,8 @@ export default function Index() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+            viewport={{ once: true }}>
+
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
               Ready to <span className="gradient-text">Crack</span> Your Interview?
             </h2>
@@ -272,6 +272,6 @@ export default function Index() {
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>);
+
 }
