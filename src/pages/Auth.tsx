@@ -11,6 +11,53 @@ import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
+function FloatingInput({
+  id, label, icon: Icon, type = "text", value, onChange, error, showToggle, onToggle, showValue,
+}: {
+  id: string; label: string; icon: React.ElementType; type?: string; value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  error?: string; showToggle?: boolean; onToggle?: () => void; showValue?: boolean;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="relative group">
+        <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors duration-200 z-10" />
+        <Input
+          id={id}
+          type={showToggle ? (showValue ? 'text' : 'password') : type}
+          placeholder={label}
+          value={value}
+          onChange={onChange}
+          className={cn(
+            "pl-10 h-12 bg-secondary/40 border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground/60",
+            "focus:border-primary/50 focus:bg-secondary/60 focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]",
+            "transition-all duration-300",
+            error && "border-destructive/50 focus:border-destructive/50"
+          )}
+        />
+        {showToggle && (
+          <button
+            type="button"
+            onClick={onToggle}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors z-10"
+          >
+            {showValue ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        )}
+      </div>
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-xs text-destructive pl-1"
+        >
+          {error}
+        </motion.p>
+      )}
+    </div>
+  );
+}
+
 const loginSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
@@ -131,51 +178,6 @@ export default function Auth() {
       toast({ title: "Google Sign-In Failed", description: error.message || "Please try again.", variant: "destructive" });
     }
   };
-
-  const FloatingInput = ({
-    id, label, icon: Icon, type = "text", value, onChange, error, showToggle, onToggle, showValue,
-  }: {
-    id: string; label: string; icon: any; type?: string; value: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    error?: string; showToggle?: boolean; onToggle?: () => void; showValue?: boolean;
-  }) => (
-    <div className="space-y-1.5">
-      <div className="relative group">
-        <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors duration-200 z-10" />
-        <Input
-          id={id}
-          type={showToggle ? (showValue ? 'text' : 'password') : type}
-          placeholder={label}
-          value={value}
-          onChange={onChange}
-          className={cn(
-            "pl-10 h-12 bg-secondary/40 border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground/60",
-            "focus:border-primary/50 focus:bg-secondary/60 focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]",
-            "transition-all duration-300",
-            error && "border-destructive/50 focus:border-destructive/50"
-          )}
-        />
-        {showToggle && (
-          <button
-            type="button"
-            onClick={onToggle}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors z-10"
-          >
-            {showValue ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        )}
-      </div>
-      {error && (
-        <motion.p
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-xs text-destructive pl-1"
-        >
-          {error}
-        </motion.p>
-      )}
-    </div>
-  );
 
   return (
     <div className="min-h-screen animated-gradient-bg flex items-center justify-center p-4 relative overflow-hidden">
