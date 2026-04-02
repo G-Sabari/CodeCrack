@@ -1,9 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const ALLOWED_MODES = ['hint', 'explain', 'interview', 'company-feedback'];
+const MAX_MESSAGE_LENGTH = 2000;
+const MAX_CODE_LENGTH = 15000;
 
 interface MentorRequest {
   mode: 'hint' | 'explain' | 'interview' | 'company-feedback';
@@ -73,22 +78,66 @@ serve(async (req) => {
   }
 
   try {
+    // Authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const { 
-      mode, 
-      userCode, 
-      language, 
-      problemTitle,
-      problemDescription,
-      executionResult, 
-      userMessage, 
-      conversationHistory,
-      company 
-    }: MentorRequest = await req.json();
+    const body = await req.json();
+    const { mode, userCode, language, problemTitle, problemDescription, executionResult, userMessage, conversationHistory, company } = body as MentorRequest;
+
+    // Input validation
+    if (!mode || !ALLOWED_MODES.includes(mode)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid mode' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!userMessage || typeof userMessage !== 'string' || userMessage.length > MAX_MESSAGE_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or too long message' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (userCode && typeof userCode === 'string' && userCode.length > MAX_CODE_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: 'Code too long' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!problemTitle || typeof problemTitle !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Problem title is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     console.log(`AI Mentor request - Mode: ${mode}, Problem: ${problemTitle}`);
 
@@ -117,7 +166,7 @@ serve(async (req) => {
     }
 
     // Build context message
-    let contextMessage = `CURRENT PROBLEM: ${problemTitle}\n\nPROBLEM DESCRIPTION:\n${problemDescription}\n\n`;
+    let contextMessage = `CURRENT PROBLEM: ${problemTitle}\n\nPROBLEM DESCRIPTION:\n${problemDescription || ''}\n\n`;
     
     if (userCode && userCode.trim()) {
       contextMessage += `USER'S CODE (${language}):\n\`\`\`${language}\n${userCode}\n\`\`\`\n\n`;
@@ -125,26 +174,19 @@ serve(async (req) => {
     
     if (executionResult) {
       contextMessage += `EXECUTION RESULT:\n`;
-      if (executionResult.verdict) {
-        contextMessage += `Verdict: ${executionResult.verdict}\n`;
-      }
-      if (executionResult.error) {
-        contextMessage += `Error: ${executionResult.error}\n`;
-      }
-      if (executionResult.actualOutput) {
-        contextMessage += `Actual Output: ${executionResult.actualOutput}\n`;
-      }
-      if (executionResult.expectedOutput) {
-        contextMessage += `Expected Output: ${executionResult.expectedOutput}\n`;
-      }
+      if (executionResult.verdict) contextMessage += `Verdict: ${executionResult.verdict}\n`;
+      if (executionResult.error) contextMessage += `Error: ${executionResult.error}\n`;
+      if (executionResult.actualOutput) contextMessage += `Actual Output: ${executionResult.actualOutput}\n`;
+      if (executionResult.expectedOutput) contextMessage += `Expected Output: ${executionResult.expectedOutput}\n`;
       contextMessage += '\n';
     }
 
-    // Prepare messages for the AI
+    const safeHistory = Array.isArray(conversationHistory) ? conversationHistory.slice(-10) : [];
+
     const messages = [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: contextMessage },
-      ...conversationHistory.slice(-10), // Keep last 10 messages for context
+      ...safeHistory,
       { role: 'user', content: userMessage }
     ];
 
@@ -174,12 +216,10 @@ serve(async (req) => {
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
+      console.error('AI gateway error:', response.status);
       throw new Error('AI gateway error');
     }
 
-    // Return streaming response
     return new Response(response.body, {
       headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
     });
@@ -187,7 +227,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('AI Mentor error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Mentor unavailable' }),
+      JSON.stringify({ error: 'Mentor unavailable' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
