@@ -22,6 +22,7 @@ import GroupDiscussion from "./pages/GroupDiscussion";
 import PYQDatabase from "./pages/PYQDatabase";
 import WeeklyContest from "./pages/WeeklyContest";
 import Leaderboard from "./pages/Leaderboard";
+import AIInterview from "./pages/AIInterview";
 
 const queryClient = new QueryClient();
 
