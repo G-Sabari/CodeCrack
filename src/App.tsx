@@ -23,6 +23,7 @@ import PYQDatabase from "./pages/PYQDatabase";
 import WeeklyContest from "./pages/WeeklyContest";
 import Leaderboard from "./pages/Leaderboard";
 import AIInterview from "./pages/AIInterview";
+import AIInterviewPro from "./modules/ai-interview-pro/AIInterviewPro";
 
 const queryClient = new QueryClient();
 
