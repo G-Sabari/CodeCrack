@@ -1,0 +1,36 @@
+// Shared design tokens — fully scoped, no global leakage
+$radius: 16px;
+$radius-sm: 10px;
+$shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+$shadow-glow: 0 8px 32px rgba(120, 80, 255, 0.18);
+$gap: 16px;
+
+$bg: hsl(var(--background));
+$fg: hsl(var(--foreground));
+$muted: hsl(var(--muted-foreground));
+$card: hsl(var(--card));
+$border: hsl(var(--border));
+$primary: hsl(var(--primary));
+$primary-fg: hsl(var(--primary-foreground));
+$accent: hsl(var(--accent));
+
+@mixin card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)), $card;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-soft;
+  backdrop-filter: blur(8px);
+}
+
+@mixin chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid $border;
+  background: rgba(255,255,255,0.03);
+  color: $fg;
+}
