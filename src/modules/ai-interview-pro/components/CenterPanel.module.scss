@@ -184,3 +184,33 @@
   color: $muted;
   font-size: 14px;
 }
+
+.errorCard {
+  margin: auto;
+  max-width: 480px;
+  padding: 18px 20px;
+  border-radius: $radius-sm;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.08);
+  text-align: center;
+}
+.errorTitle {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #fecaca;
+}
+.errorMsg {
+  font-size: 13px;
+  color: $muted;
+  margin-bottom: 14px;
+}
+.retryBtn {
+  padding: 8px 18px;
+  border-radius: $radius-sm;
+  background: $primary;
+  color: $primary-fg;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover { opacity: 0.9; }
+}
