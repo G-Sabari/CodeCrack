@@ -17,10 +17,13 @@ interface Props {
   onToggleMic: () => void;
   micSupported: boolean;
   disabled: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 const CenterPanel: React.FC<Props> = ({
   messages, streaming, input, setInput, onSubmit, listening, onToggleMic, micSupported, disabled,
+  error, onRetry,
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -46,7 +49,7 @@ const CenterPanel: React.FC<Props> = ({
       </div>
 
       <div ref={scrollRef} className={styles.chat}>
-        {messages.length === 0 && !streaming && (
+        {messages.length === 0 && !streaming && !error && (
           <div className={styles.empty}>The interview will begin shortly…</div>
         )}
         {messages.map((m, i) => (
@@ -57,6 +60,17 @@ const CenterPanel: React.FC<Props> = ({
         {streaming && (
           <div className={styles.typing}>
             <span /><span /><span />
+          </div>
+        )}
+        {error && !streaming && (
+          <div className={styles.errorCard} role="alert">
+            <div className={styles.errorTitle}>Couldn't reach the interviewer</div>
+            <div className={styles.errorMsg}>{error}</div>
+            {onRetry && (
+              <button type="button" className={styles.retryBtn} onClick={onRetry}>
+                Retry
+              </button>
+            )}
           </div>
         )}
       </div>
