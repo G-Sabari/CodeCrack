@@ -258,7 +258,9 @@ const AIInterviewPro: React.FC = () => {
           listening={listening}
           onToggleMic={toggleMic}
           micSupported={micSupported}
-          disabled={!started || streaming}
+          disabled={!started || streaming || !!startError}
+          error={startError}
+          onRetry={retryStart}
         />
         <RightPanel
           difficulty={difficulty}
