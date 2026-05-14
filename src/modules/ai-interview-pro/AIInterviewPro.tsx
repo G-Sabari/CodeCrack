@@ -164,6 +164,7 @@ const AIInterviewPro: React.FC = () => {
     setStarted(true);
     setEnded(false);
     setMessages([]);
+    setStartError(null);
     setQuestionsAsked(0);
     setAnswersGiven(0);
   };
@@ -177,6 +178,7 @@ const AIInterviewPro: React.FC = () => {
   const handleReset = () => {
     setEnded(false);
     setMessages([]);
+    setStartError(null);
     setQuestionsAsked(0);
     setAnswersGiven(0);
   };
