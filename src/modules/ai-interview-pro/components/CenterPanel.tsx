@@ -17,10 +17,13 @@ interface Props {
   onToggleMic: () => void;
   micSupported: boolean;
   disabled: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 const CenterPanel: React.FC<Props> = ({
   messages, streaming, input, setInput, onSubmit, listening, onToggleMic, micSupported, disabled,
+  error, onRetry,
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
