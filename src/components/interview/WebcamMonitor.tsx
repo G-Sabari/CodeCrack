@@ -13,9 +13,16 @@ const WebcamMonitor: React.FC<WebcamMonitorProps> = ({ isActive, onWarning }) =>
   const videoRef = useRef<HTMLVideoElement>(null);
   const [status, setStatus] = useState<CameraStatus>("connecting");
   const streamRef = useRef<MediaStream | null>(null);
+  const onWarningRef = useRef(onWarning);
+  const hasWarnedRef = useRef(false);
+
+  useEffect(() => {
+    onWarningRef.current = onWarning;
+  }, [onWarning]);
 
   useEffect(() => {
     if (!isActive) return;
+    let cancelled = false;
 
     const startCamera = async () => {
       setStatus("connecting");
@@ -24,24 +31,33 @@ const WebcamMonitor: React.FC<WebcamMonitorProps> = ({ isActive, onWarning }) =>
           video: { width: 480, height: 360, facingMode: "user" },
           audio: false,
         });
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
         setStatus("active");
       } catch {
+        if (cancelled) return;
         setStatus("denied");
-        onWarning?.("Camera access denied. Please enable camera for proctoring.");
+        if (!hasWarnedRef.current) {
+          hasWarnedRef.current = true;
+          onWarningRef.current?.("Camera access denied. Please enable camera for proctoring.");
+        }
       }
     };
 
     startCamera();
 
     return () => {
+      cancelled = true;
       streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     };
-  }, [isActive, onWarning]);
+  }, [isActive]);
 
   if (!isActive) return null;
 
