@@ -100,3 +100,8 @@
   }
   .shell { padding: 14px; }
 }
+
+@media (max-width: 900px) {
+  .subtitle { display: none; }
+  .topbar { grid-template-columns: 1fr auto; }
+}
