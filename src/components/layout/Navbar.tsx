@@ -18,6 +18,7 @@ const navLinks = [
   { name: "PYQ", href: "/pyq-database" },
   { name: "Aptitude", href: "/aptitude" },
   { name: "HR Interview", href: "/behavioral" },
+  { name: "AI Interview", href: "/ai-interview" },
   { name: "Leaderboard", href: "/leaderboard" },
   { name: "Dashboard", href: "/dashboard" },
 ];
