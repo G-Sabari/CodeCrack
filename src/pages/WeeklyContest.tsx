@@ -77,65 +77,113 @@ export default function WeeklyContest() {
             </div>
           </div>
 
-          {/* Countdown / Live Banner */}
-          <div className="mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-card/80 via-card/60 to-primary/5 backdrop-blur-sm p-8">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px]" />
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-4">
-                  <Badge variant="outline" className={cn(
-                    "text-sm font-medium",
-                    currentWeekContest.status === "live" 
-                      ? "border-[hsl(var(--success))]/50 text-[hsl(var(--success))] bg-[hsl(var(--success))]/10 animate-pulse" 
-                      : "border-primary/50 text-primary bg-primary/10"
-                  )}>
-                    {currentWeekContest.status === "live" ? "🔴 LIVE NOW" : "⏰ Upcoming"}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    Week {currentWeekContest.week} • {currentWeekContest.year}
-                  </span>
-                </div>
-
-                <h2 className="text-2xl font-bold mb-2">
-                  CodeCrack Weekly Challenge #{currentWeekContest.week}
-                </h2>
-                <p className="text-muted-foreground mb-6">
-                  {currentWeekContest.aptitudeQuestions} Aptitude MCQs + {currentWeekContest.codingProblems} Coding Problems • {currentWeekContest.duration} minutes
-                </p>
-
-                {currentWeekContest.status !== "live" ? (
-                  <div className="flex flex-wrap gap-4 mb-6">
-                    {[
-                      { label: "Days", value: countdown.days },
-                      { label: "Hours", value: countdown.hours },
-                      { label: "Minutes", value: countdown.minutes },
-                      { label: "Seconds", value: countdown.seconds },
-                    ].map((item) => (
-                      <div key={item.label} className="flex flex-col items-center p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm min-w-[80px]">
-                        <span className="text-3xl font-bold text-primary">{String(item.value).padStart(2, "0")}</span>
-                        <span className="text-xs text-muted-foreground uppercase tracking-wider">{item.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>{currentWeekContest.participants} participants registered</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>{currentWeekContest.duration} min duration</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>Every Saturday & Sunday</span>
+          {/* Live Contest CTA (DB-backed) */}
+          {featured && (
+            <div className="mb-6 animate-fade-in">
+              <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-card/60 to-[hsl(280,65%,60%)]/10 backdrop-blur-sm p-6">
+                <div className="absolute top-0 right-0 w-72 h-72 bg-primary/20 rounded-full blur-[100px]" />
+                <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex-1 min-w-[260px]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-xs",
+                          featured.status === "live"
+                            ? "border-[hsl(var(--success))]/50 text-[hsl(var(--success))] bg-[hsl(var(--success))]/10 animate-pulse"
+                            : "border-primary/50 text-primary bg-primary/10",
+                        )}
+                      >
+                        {featured.status === "live" ? "🔴 LIVE NOW" : "⏰ Next Contest"}
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs uppercase">{featured.category}</Badge>
+                    </div>
+                    <h2 className="text-xl md:text-2xl font-bold mb-1">{featured.title}</h2>
+                    <p className="text-sm text-muted-foreground mb-4">{featured.description}</p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {[
+                        { label: "D", value: liveCountdown.days },
+                        { label: "H", value: liveCountdown.hours },
+                        { label: "M", value: liveCountdown.minutes },
+                        { label: "S", value: liveCountdown.seconds },
+                      ].map((b) => (
+                        <div key={b.label} className="px-3 py-2 rounded-lg border border-border/50 bg-background/40 backdrop-blur-sm min-w-[54px] text-center">
+                          <div className="text-xl font-bold text-primary">{String(b.value).padStart(2, "0")}</div>
+                          <div className="text-[10px] text-muted-foreground uppercase">{b.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <Link to={`/contest/${featured.slug}`}>
+                      <Button size="lg" className="group/btn">
+                        <Sparkles className="h-4 w-4 mr-1.5" />
+                        {featured.status === "live" ? "Join Live Contest" : "View Contest"}
+                        <ArrowRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Gamification strip */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 animate-fade-in">
+            {[
+              { icon: Flame, label: "Weekly Streak", value: "3 weeks", color: "text-[hsl(25,90%,60%)]" },
+              { icon: Star, label: "XP Points", value: "1,240", color: "text-[hsl(45,95%,60%)]" },
+              { icon: Award, label: "Badges", value: "5 earned", color: "text-primary" },
+              { icon: TrendingUp, label: "Best Rank", value: "#12", color: "text-[hsl(var(--success))]" },
+            ].map((s) => (
+              <div key={s.label} className="p-3 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm flex items-center gap-3">
+                <div className={cn("p-2 rounded-lg bg-secondary/50", s.color)}>
+                  <s.icon className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">{s.label}</div>
+                  <div className="text-sm font-bold">{s.value}</div>
+                </div>
+              </div>
+            ))}
           </div>
+
+          {/* Upcoming contests grid */}
+          {contests.length > 0 && (
+            <div className="mb-8 animate-fade-in">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">All Contests</h3>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {contests.map((c) => (
+                  <Link key={c.id} to={`/contest/${c.slug}`}>
+                    <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/40 hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.4)] transition-all">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge variant="outline" className="text-[10px] uppercase">{c.category}</Badge>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-[10px]",
+                              c.status === "live"
+                                ? "border-[hsl(var(--success))]/50 text-[hsl(var(--success))]"
+                                : c.status === "upcoming"
+                                ? "border-primary/50 text-primary"
+                                : "border-muted text-muted-foreground",
+                            )}
+                          >
+                            {c.status}
+                          </Badge>
+                        </div>
+                        <p className="font-semibold text-sm line-clamp-1">{c.title}</p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{c.duration_minutes}m</span>
+                          <span className="flex items-center gap-1"><Trophy className="h-3 w-3" />{c.total_points}pts</span>
+                          <span>{new Date(c.start_time).toLocaleDateString()}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Contest Modules */}
           <div className="grid md:grid-cols-2 gap-6 mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
