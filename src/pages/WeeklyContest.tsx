@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import {
   Trophy, Clock, Users, Calendar, Zap, Target, Code2,
   Calculator, ArrowRight, Timer, Star, TrendingUp, ChevronRight, Award,
+  Sparkles, Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -19,9 +20,17 @@ import {
   getCountdownToContest,
   companyContestProfiles,
 } from "@/data/contestData";
+import { useContests, useCountdown } from "@/hooks/useContests";
 
 export default function WeeklyContest() {
   const [countdown, setCountdown] = useState(getCountdownToContest());
+  const { contests } = useContests();
+  const live = contests.find((c) => c.status === "live");
+  const upcoming = contests.find((c) => c.status === "upcoming");
+  const featured = live ?? upcoming ?? contests[0];
+  const liveCountdown = useCountdown(
+    featured?.status === "upcoming" ? featured?.start_time : featured?.end_time,
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
