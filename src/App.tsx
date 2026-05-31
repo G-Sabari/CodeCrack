@@ -56,6 +56,8 @@ const App = () => (
               <Route path="/group-discussion" element={<ProtectedRoute><GroupDiscussion /></ProtectedRoute>} />
               <Route path="/pyq-database" element={<ProtectedRoute><PYQDatabase /></ProtectedRoute>} />
               <Route path="/contest" element={<ProtectedRoute><WeeklyContest /></ProtectedRoute>} />
+              <Route path="/contest/:slug" element={<ProtectedRoute><ContestArena /></ProtectedRoute>} />
+              <Route path="/certificate/:code" element={<CertificateView />} />
               <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
