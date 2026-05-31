@@ -21,6 +21,8 @@ import Behavioral from "./pages/Behavioral";
 import GroupDiscussion from "./pages/GroupDiscussion";
 import PYQDatabase from "./pages/PYQDatabase";
 import WeeklyContest from "./pages/WeeklyContest";
+import ContestArena from "./pages/ContestArena";
+import CertificateView from "./pages/CertificateView";
 import Leaderboard from "./pages/Leaderboard";
 
 
