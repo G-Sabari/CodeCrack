@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      certificates: {
+        Row: {
+          code: string
+          contest_id: string
+          contest_title: string
+          id: string
+          issued_at: string
+          rank: number
+          recipient_name: string
+          score: number
+          total_points: number
+          user_id: string
+        }
+        Insert: {
+          code: string
+          contest_id: string
+          contest_title: string
+          id?: string
+          issued_at?: string
+          rank: number
+          recipient_name: string
+          score: number
+          total_points: number
+          user_id: string
+        }
+        Update: {
+          code?: string
+          contest_id?: string
+          contest_title?: string
+          id?: string
+          issued_at?: string
+          rank?: number
+          recipient_name?: string
+          score?: number
+          total_points?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           category: Database["public"]["Enums"]["company_category"]
@@ -65,6 +112,191 @@ export type Database = {
           preparation_tips?: string[] | null
           technical_rounds_details?: string | null
           website_url?: string | null
+        }
+        Relationships: []
+      }
+      contest_problems: {
+        Row: {
+          contest_id: string
+          created_at: string
+          id: string
+          points: number
+          problem_id: string
+          problem_order: number
+        }
+        Insert: {
+          contest_id: string
+          created_at?: string
+          id?: string
+          points?: number
+          problem_id: string
+          problem_order?: number
+        }
+        Update: {
+          contest_id?: string
+          created_at?: string
+          id?: string
+          points?: number
+          problem_id?: string
+          problem_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contest_problems_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contest_problems_problem_id_fkey"
+            columns: ["problem_id"]
+            isOneToOne: false
+            referencedRelation: "problems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contest_registrations: {
+        Row: {
+          contest_id: string
+          id: string
+          registered_at: string
+          user_id: string
+        }
+        Insert: {
+          contest_id: string
+          id?: string
+          registered_at?: string
+          user_id: string
+        }
+        Update: {
+          contest_id?: string
+          id?: string
+          registered_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contest_registrations_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contest_submissions: {
+        Row: {
+          code: string
+          contest_id: string
+          id: string
+          language: string
+          passed_count: number
+          problem_id: string
+          runtime_ms: number | null
+          score: number
+          status: string
+          submitted_at: string
+          total_count: number
+          user_id: string
+        }
+        Insert: {
+          code: string
+          contest_id: string
+          id?: string
+          language: string
+          passed_count?: number
+          problem_id: string
+          runtime_ms?: number | null
+          score?: number
+          status?: string
+          submitted_at?: string
+          total_count?: number
+          user_id: string
+        }
+        Update: {
+          code?: string
+          contest_id?: string
+          id?: string
+          language?: string
+          passed_count?: number
+          problem_id?: string
+          runtime_ms?: number | null
+          score?: number
+          status?: string
+          submitted_at?: string
+          total_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contest_submissions_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contest_submissions_problem_id_fkey"
+            columns: ["problem_id"]
+            isOneToOne: false
+            referencedRelation: "problems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contests: {
+        Row: {
+          banner_gradient: string | null
+          category: string
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          end_time: string
+          id: string
+          slug: string
+          start_time: string
+          status: string
+          title: string
+          total_points: number
+          updated_at: string
+          week_number: number | null
+          year: number | null
+        }
+        Insert: {
+          banner_gradient?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          end_time: string
+          id?: string
+          slug: string
+          start_time: string
+          status?: string
+          title: string
+          total_points?: number
+          updated_at?: string
+          week_number?: number | null
+          year?: number | null
+        }
+        Update: {
+          banner_gradient?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          end_time?: string
+          id?: string
+          slug?: string
+          start_time?: string
+          status?: string
+          title?: string
+          total_points?: number
+          updated_at?: string
+          week_number?: number | null
+          year?: number | null
         }
         Relationships: []
       }
