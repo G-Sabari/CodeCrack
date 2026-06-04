@@ -343,6 +343,43 @@
     animation: pulse-glow 3s ease-in-out infinite;
   }
 
+  /* Shine sweep used by countdown / podium / badges */
+  @keyframes shine-sweep {
+    0% { transform: translateX(-100%); }
+    60%, 100% { transform: translateX(200%); }
+  }
+  .animate-shine {
+    animation: shine-sweep 2.8s ease-in-out infinite;
+  }
+
+  /* Drifting particles for premium contest backgrounds */
+  @keyframes particle-drift {
+    0% { transform: translate(0, 0) scale(1); opacity: 0; }
+    20% { opacity: var(--p-opacity, 0.6); }
+    50% { transform: translate(20px, -40px) scale(1.2); }
+    80% { opacity: var(--p-opacity, 0.6); }
+    100% { transform: translate(-15px, -80px) scale(0.9); opacity: 0; }
+  }
+  .animate-particle-drift {
+    animation: particle-drift linear infinite;
+  }
+
+  /* Holographic text shimmer */
+  @keyframes holo-text {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .text-holo {
+    background: linear-gradient(90deg,
+      hsl(var(--primary)), hsl(var(--accent)),
+      hsl(200 90% 65%), hsl(var(--primary)));
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: holo-text 6s ease-in-out infinite;
+  }
+
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
