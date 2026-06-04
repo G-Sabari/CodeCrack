@@ -11,6 +11,7 @@ import { ShieldCheck, Download, Loader2, ShieldX, Share2, Trophy } from "lucide-
 import { supabase } from "@/integrations/supabase/client";
 import { buildCertificatePdf, downloadBlob } from "@/lib/certificate";
 import { toast } from "sonner";
+import { FloatingParticles } from "@/components/contest/FloatingParticles";
 
 type Cert = {
   id: string;
@@ -78,9 +79,10 @@ export default function CertificateView() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      <FloatingParticles count={16} color="hsl(45 95% 60% / 0.25)" />
       <Navbar />
-      <main className="pt-24 pb-16">
+      <main className="pt-24 pb-16 relative z-10">
         <div className="container mx-auto px-4 max-w-3xl">
           <div className="mb-4"><BackButton /></div>
 
