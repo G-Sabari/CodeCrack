@@ -21,6 +21,9 @@ import {
   companyContestProfiles,
 } from "@/data/contestData";
 import { useContests, useCountdown } from "@/hooks/useContests";
+import { FloatingParticles } from "@/components/contest/FloatingParticles";
+import { CountdownTimer } from "@/components/contest/CountdownTimer";
+import { AnimatedBadge } from "@/components/contest/AnimatedBadge";
 
 export default function WeeklyContest() {
   const [countdown, setCountdown] = useState(getCountdownToContest());
@@ -46,11 +49,7 @@ export default function WeeklyContest() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[hsl(280,65%,60%)]/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: "1s" }} />
-      </div>
+      <FloatingParticles count={22} />
 
       <Navbar />
 
@@ -63,11 +62,11 @@ export default function WeeklyContest() {
           {/* Header */}
           <div className="mb-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-[hsl(280,65%,60%)]/20 border border-primary/20 backdrop-blur-sm">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-[hsl(280,65%,60%)]/20 border border-primary/20 backdrop-blur-sm animate-pulse-glow">
                 <Trophy className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-[hsl(200,80%,60%)] bg-clip-text text-transparent">
+                <h1 className="text-3xl md:text-4xl font-bold text-holo">
                   Weekly Contest
                 </h1>
                 <p className="text-muted-foreground">
@@ -100,19 +99,14 @@ export default function WeeklyContest() {
                     </div>
                     <h2 className="text-xl md:text-2xl font-bold mb-1">{featured.title}</h2>
                     <p className="text-sm text-muted-foreground mb-4">{featured.description}</p>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {[
-                        { label: "D", value: liveCountdown.days },
-                        { label: "H", value: liveCountdown.hours },
-                        { label: "M", value: liveCountdown.minutes },
-                        { label: "S", value: liveCountdown.seconds },
-                      ].map((b) => (
-                        <div key={b.label} className="px-3 py-2 rounded-lg border border-border/50 bg-background/40 backdrop-blur-sm min-w-[54px] text-center">
-                          <div className="text-xl font-bold text-primary">{String(b.value).padStart(2, "0")}</div>
-                          <div className="text-[10px] text-muted-foreground uppercase">{b.label}</div>
-                        </div>
-                      ))}
-                    </div>
+                    <CountdownTimer
+                      days={liveCountdown.days}
+                      hours={liveCountdown.hours}
+                      minutes={liveCountdown.minutes}
+                      seconds={liveCountdown.seconds}
+                      size="md"
+                      className="mb-4"
+                    />
                     <Link to={`/contest/${featured.slug}`}>
                       <Button size="lg" className="group/btn">
                         <Sparkles className="h-4 w-4 mr-1.5" />
@@ -127,22 +121,14 @@ export default function WeeklyContest() {
           )}
 
           {/* Gamification strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 animate-fade-in">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
             {[
               { icon: Flame, label: "Weekly Streak", value: "3 weeks", color: "text-[hsl(25,90%,60%)]" },
               { icon: Star, label: "XP Points", value: "1,240", color: "text-[hsl(45,95%,60%)]" },
               { icon: Award, label: "Badges", value: "5 earned", color: "text-primary" },
               { icon: TrendingUp, label: "Best Rank", value: "#12", color: "text-[hsl(var(--success))]" },
-            ].map((s) => (
-              <div key={s.label} className="p-3 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm flex items-center gap-3">
-                <div className={cn("p-2 rounded-lg bg-secondary/50", s.color)}>
-                  <s.icon className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">{s.label}</div>
-                  <div className="text-sm font-bold">{s.value}</div>
-                </div>
-              </div>
+            ].map((s, i) => (
+              <AnimatedBadge key={s.label} icon={s.icon} label={s.label} value={s.value} color={s.color} delay={i * 0.08} />
             ))}
           </div>
 

@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { rankedParticipants } from "@/data/contestData";
+import { FloatingParticles } from "@/components/contest/FloatingParticles";
+import { Podium } from "@/components/contest/Podium";
 
 const getRankIcon = (rank: number) => {
   if (rank === 1) return <Crown className="h-6 w-6 text-[hsl(45,100%,50%)]" />;
@@ -48,11 +50,7 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[hsl(45,100%,50%)]/5 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: "1s" }} />
-      </div>
+      <FloatingParticles count={20} color="hsl(45 100% 55% / 0.25)" />
 
       <Navbar />
 
@@ -65,11 +63,11 @@ export default function Leaderboard() {
           {/* Header */}
           <div className="mb-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-[hsl(45,100%,50%)]/20 to-primary/20 border border-[hsl(45,100%,50%)]/20 backdrop-blur-sm">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-[hsl(45,100%,50%)]/20 to-primary/20 border border-[hsl(45,100%,50%)]/20 backdrop-blur-sm animate-pulse-glow">
                 <Trophy className="h-6 w-6 text-[hsl(45,100%,50%)]" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-[hsl(45,100%,50%)] via-foreground to-primary bg-clip-text text-transparent">
+                <h1 className="text-3xl md:text-4xl font-bold text-holo">
                   Leaderboard
                 </h1>
                 <p className="text-muted-foreground">
@@ -80,56 +78,14 @@ export default function Leaderboard() {
           </div>
 
           {/* Top 3 Podium */}
-          <div className="mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
-              {/* 2nd Place */}
-              <div className="flex flex-col items-center pt-8">
-                <div className="relative mb-3">
-                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[hsl(0,0%,75%)] to-[hsl(0,0%,60%)] flex items-center justify-center text-2xl font-bold text-background">
-                    {rankedParticipants[1]?.name.charAt(0)}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-card border-2 border-[hsl(0,0%,75%)] flex items-center justify-center">
-                    <span className="text-xs font-bold">2</span>
-                  </div>
-                </div>
-                <p className="font-semibold text-sm text-center">{rankedParticipants[1]?.name}</p>
-                <p className="text-lg font-bold text-[hsl(0,0%,75%)]">{rankedParticipants[1]?.totalScore}</p>
-                <div className="h-24 w-full mt-2 rounded-t-xl bg-gradient-to-t from-[hsl(0,0%,75%)]/20 to-[hsl(0,0%,75%)]/5 border border-b-0 border-[hsl(0,0%,75%)]/20" />
-              </div>
-
-              {/* 1st Place */}
-              <div className="flex flex-col items-center">
-                <div className="relative mb-3">
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Crown className="h-6 w-6 text-[hsl(45,100%,50%)] animate-pulse" />
-                  </div>
-                  <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[hsl(45,100%,50%)] to-[hsl(35,100%,45%)] flex items-center justify-center text-3xl font-bold text-background shadow-[0_0_30px_hsl(45,100%,50%,0.3)]">
-                    {rankedParticipants[0]?.name.charAt(0)}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-card border-2 border-[hsl(45,100%,50%)] flex items-center justify-center">
-                    <Star className="h-4 w-4 text-[hsl(45,100%,50%)]" />
-                  </div>
-                </div>
-                <p className="font-bold text-center">{rankedParticipants[0]?.name}</p>
-                <p className="text-xl font-bold text-[hsl(45,100%,50%)]">{rankedParticipants[0]?.totalScore}</p>
-                <div className="h-32 w-full mt-2 rounded-t-xl bg-gradient-to-t from-[hsl(45,100%,50%)]/20 to-[hsl(45,100%,50%)]/5 border border-b-0 border-[hsl(45,100%,50%)]/20" />
-              </div>
-
-              {/* 3rd Place */}
-              <div className="flex flex-col items-center pt-12">
-                <div className="relative mb-3">
-                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[hsl(30,60%,50%)] to-[hsl(20,50%,40%)] flex items-center justify-center text-xl font-bold text-background">
-                    {rankedParticipants[2]?.name.charAt(0)}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-card border-2 border-[hsl(30,60%,50%)] flex items-center justify-center">
-                    <span className="text-xs font-bold">3</span>
-                  </div>
-                </div>
-                <p className="font-semibold text-sm text-center">{rankedParticipants[2]?.name}</p>
-                <p className="text-lg font-bold text-[hsl(30,60%,50%)]">{rankedParticipants[2]?.totalScore}</p>
-                <div className="h-16 w-full mt-2 rounded-t-xl bg-gradient-to-t from-[hsl(30,60%,50%)]/20 to-[hsl(30,60%,50%)]/5 border border-b-0 border-[hsl(30,60%,50%)]/20" />
-              </div>
-            </div>
+          <div className="mb-10 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+            <Podium
+              entries={[
+                rankedParticipants[0] && { name: rankedParticipants[0].name, score: rankedParticipants[0].totalScore },
+                rankedParticipants[1] && { name: rankedParticipants[1].name, score: rankedParticipants[1].totalScore },
+                rankedParticipants[2] && { name: rankedParticipants[2].name, score: rankedParticipants[2].totalScore },
+              ]}
+            />
           </div>
 
           {/* Tab-based Rankings */}

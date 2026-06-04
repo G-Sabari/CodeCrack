@@ -18,6 +18,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useContest, useCountdown, useLiveLeaderboard, useRegistrationCount } from "@/hooks/useContests";
 import { buildCertificatePdf, downloadBlob, generateCode } from "@/lib/certificate";
 import { toast } from "sonner";
+import { FloatingParticles } from "@/components/contest/FloatingParticles";
+import { CountdownTimer } from "@/components/contest/CountdownTimer";
 
 const LANG_OPTIONS = [
   { value: "python", label: "Python 3", monaco: "python" },
@@ -236,9 +238,10 @@ export default function ContestArena() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      <FloatingParticles count={14} />
       <Navbar />
-      <main className="pt-20 pb-12">
+      <main className="pt-20 pb-12 relative z-10">
         <div className="container mx-auto px-4">
           <div className="mb-4 flex items-center justify-between">
             <BackButton />
@@ -278,19 +281,13 @@ export default function ContestArena() {
 
               <div className="flex flex-col items-end gap-2">
                 {contest.status !== "ended" && (
-                  <div className="flex gap-2">
-                    {[
-                      { label: "D", value: countdown.days },
-                      { label: "H", value: countdown.hours },
-                      { label: "M", value: countdown.minutes },
-                      { label: "S", value: countdown.seconds },
-                    ].map((b) => (
-                      <div key={b.label} className="px-3 py-2 rounded-lg border border-border/50 bg-background/40 backdrop-blur-sm min-w-[54px] text-center">
-                        <div className="text-xl font-bold text-primary">{String(b.value).padStart(2, "0")}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase">{b.label}</div>
-                      </div>
-                    ))}
-                  </div>
+                  <CountdownTimer
+                    days={countdown.days}
+                    hours={countdown.hours}
+                    minutes={countdown.minutes}
+                    seconds={countdown.seconds}
+                    size="md"
+                  />
                 )}
                 <div className="flex gap-2">
                   {!registered && contest.status !== "ended" && (
