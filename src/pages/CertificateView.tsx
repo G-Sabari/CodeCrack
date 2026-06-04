@@ -122,6 +122,7 @@ export default function CertificateView() {
               >
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute top-4 left-4 right-4 bottom-4 border border-primary/30 rounded-xl" />
+                  <span className="absolute inset-0 -translate-x-full animate-shine bg-gradient-to-r from-transparent via-[hsl(45,95%,60%)]/15 to-transparent" />
                 </div>
                 <div className="relative">
                   <Trophy className="h-10 w-10 mx-auto mb-3 text-[hsl(45,95%,60%)]" />
