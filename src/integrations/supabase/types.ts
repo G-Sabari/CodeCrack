@@ -14,11 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      certificate_rules: {
+        Row: {
+          citation_prompt: string | null
+          contest_id: string
+          created_at: string
+          enabled: boolean
+          id: string
+          min_score: number
+          participation_enabled: boolean
+          top_n: number
+          updated_at: string
+        }
+        Insert: {
+          citation_prompt?: string | null
+          contest_id: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          min_score?: number
+          participation_enabled?: boolean
+          top_n?: number
+          updated_at?: string
+        }
+        Update: {
+          citation_prompt?: string | null
+          contest_id?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          min_score?: number
+          participation_enabled?: boolean
+          top_n?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_rules_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: true
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificates: {
         Row: {
+          certificate_type: string
+          citation: string | null
           code: string
           contest_id: string
           contest_title: string
+          generated_by: string | null
           id: string
           issued_at: string
           rank: number
@@ -28,9 +75,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          certificate_type?: string
+          citation?: string | null
           code: string
           contest_id: string
           contest_title: string
+          generated_by?: string | null
           id?: string
           issued_at?: string
           rank: number
@@ -40,9 +90,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          certificate_type?: string
+          citation?: string | null
           code?: string
           contest_id?: string
           contest_title?: string
+          generated_by?: string | null
           id?: string
           issued_at?: string
           rank?: number
@@ -687,14 +740,44 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_first_admin: { Args: never; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       company_category: "FAANG" | "Product" | "Service" | "Startup"
       difficulty_level: "Easy" | "Medium" | "Hard"
       problem_type: "Coding" | "Aptitude" | "Behavioral" | "GD"
@@ -826,6 +909,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       company_category: ["FAANG", "Product", "Service", "Startup"],
       difficulty_level: ["Easy", "Medium", "Hard"],
       problem_type: ["Coding", "Aptitude", "Behavioral", "GD"],

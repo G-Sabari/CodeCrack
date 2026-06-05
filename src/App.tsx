@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AdminRoute } from "@/components/auth/AdminRoute";
 import Index from "./pages/Index";
 import Problems from "./pages/Problems";
 import ProblemDetail from "./pages/ProblemDetail";
@@ -23,7 +24,14 @@ import PYQDatabase from "./pages/PYQDatabase";
 import WeeklyContest from "./pages/WeeklyContest";
 import ContestArena from "./pages/ContestArena";
 import CertificateView from "./pages/CertificateView";
+import UserCertificates from "./pages/UserCertificates";
 import Leaderboard from "./pages/Leaderboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminContests from "./pages/admin/AdminContests";
+import AdminProblems from "./pages/admin/AdminProblems";
+import AdminSubmissions from "./pages/admin/AdminSubmissions";
+import AdminCertificates from "./pages/admin/AdminCertificates";
+
 
 
 const queryClient = new QueryClient();
@@ -58,10 +66,18 @@ const App = () => (
               <Route path="/contest" element={<ProtectedRoute><WeeklyContest /></ProtectedRoute>} />
               <Route path="/contest/:slug" element={<ProtectedRoute><ContestArena /></ProtectedRoute>} />
               <Route path="/certificate/:code" element={<CertificateView />} />
+              <Route path="/certificates" element={<ProtectedRoute><UserCertificates /></ProtectedRoute>} />
               <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-              
+
+              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="/admin/contests" element={<AdminRoute><AdminContests /></AdminRoute>} />
+              <Route path="/admin/problems" element={<AdminRoute><AdminProblems /></AdminRoute>} />
+              <Route path="/admin/submissions" element={<AdminRoute><AdminSubmissions /></AdminRoute>} />
+              <Route path="/admin/certificates" element={<AdminRoute><AdminCertificates /></AdminRoute>} />
+
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
+
             </Routes>
           </BrowserRouter>
         </TooltipProvider>

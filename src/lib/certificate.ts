@@ -9,7 +9,10 @@ export type CertificateData = {
   score: number;
   totalPoints: number;
   issuedAt: string;
+  citation?: string;
+  certificateType?: string;
 };
+
 
 function generateCode() {
   const year = new Date().getFullYear();
@@ -76,6 +79,25 @@ export async function buildCertificatePdf(data: CertificateData, verifyUrl: stri
     324,
     { align: "center" },
   );
+
+  // Optional AI citation
+  if (data.citation) {
+    pdf.setFont("helvetica", "italic");
+    pdf.setFontSize(12);
+    pdf.setTextColor(190, 180, 230);
+    const lines = pdf.splitTextToSize(`"${data.citation}"`, w - 220);
+    pdf.text(lines, w / 2, 352, { align: "center" });
+  }
+
+  // Type badge
+  if (data.certificateType) {
+    const label = data.certificateType.replace(/_/g, " ").toUpperCase();
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+    pdf.setTextColor(255, 215, 100);
+    pdf.text(label, w / 2, 168, { align: "center" });
+  }
+
 
   // Stats row
   const stats = [
