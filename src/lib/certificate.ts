@@ -9,7 +9,10 @@ export type CertificateData = {
   score: number;
   totalPoints: number;
   issuedAt: string;
+  citation?: string;
+  certificateType?: string;
 };
+
 
 function generateCode() {
   const year = new Date().getFullYear();

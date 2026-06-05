@@ -30,7 +30,7 @@ export default function AdminSubmissions() {
       .order("submitted_at", { ascending: false })
       .limit(200);
     const subs = (data as any) ?? [];
-    const userIds = [...new Set(subs.map((s: any) => s.user_id))];
+    const userIds = [...new Set(subs.map((s: any) => s.user_id as string))] as string[];
     const { data: profs } = await supabase.from("profiles").select("user_id, full_name, email").in("user_id", userIds);
     const map = new Map((profs ?? []).map((p: any) => [p.user_id, p]));
     setRows(subs.map((s: any) => ({ ...s, profiles: map.get(s.user_id) ?? null })));
