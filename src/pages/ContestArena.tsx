@@ -53,7 +53,39 @@ export default function ContestArena() {
   const [lastResult, setLastResult] = useState<any>(null);
   const [issuingCert, setIssuingCert] = useState(false);
 
+  // Personal contest timer
+  const [startedAt, setStartedAt] = useState<string | null>(null);
+  const [remainingSec, setRemainingSec] = useState<number | null>(null);
+  const [starting, setStarting] = useState(false);
+
   const activeProblem = problems[activeIdx];
+
+  // Fetch user's registration (incl. started_at) when contest/user known
+  useEffect(() => {
+    if (!contest || !user) { setStartedAt(null); return; }
+    (async () => {
+      const { data } = await supabase
+        .from("contest_registrations")
+        .select("started_at")
+        .eq("contest_id", contest.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setStartedAt((data as any)?.started_at ?? null);
+    })();
+  }, [contest?.id, user?.id, registered]);
+
+  // Tick personal countdown
+  useEffect(() => {
+    if (!startedAt || !contest) { setRemainingSec(null); return; }
+    const endMs = new Date(startedAt).getTime() + contest.duration_minutes * 60_000;
+    const tick = () => setRemainingSec(Math.max(0, Math.floor((endMs - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startedAt, contest?.duration_minutes]);
+
+  const timeUp = startedAt != null && remainingSec === 0;
+  const personalLocked = timeUp || contest?.status === "ended";
 
   useEffect(() => {
     if (!activeProblem) return;
@@ -83,6 +115,31 @@ export default function ContestArena() {
       toast.success("Registered for the contest!");
       reloadReg();
     }
+  };
+
+  const startContest = async () => {
+    if (!contest || !user) return navigate("/auth");
+    if (contest.status !== "live") {
+      toast.error("Contest is not live yet.");
+      return;
+    }
+    setStarting(true);
+    const nowIso = new Date().toISOString();
+    const { error } = await supabase
+      .from("contest_registrations")
+      .update({ started_at: nowIso })
+      .eq("contest_id", contest.id)
+      .eq("user_id", user.id);
+    setStarting(false);
+    if (error) { toast.error(error.message); return; }
+    setStartedAt(nowIso);
+    toast.success(`Your ${contest.duration_minutes}-minute timer has started!`);
+  };
+
+  const fmtClock = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
   const runOrSubmit = async (mode: "run" | "submit") => {
