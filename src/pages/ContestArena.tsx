@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, Clock, Play, Send, Crown, Medal, Loader2, CheckCircle2, XCircle, Zap, Users } from "lucide-react";
+import { Trophy, Clock, Play, Send, Crown, Medal, Loader2, CheckCircle2, XCircle, Zap, Users, Lock, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,7 +53,39 @@ export default function ContestArena() {
   const [lastResult, setLastResult] = useState<any>(null);
   const [issuingCert, setIssuingCert] = useState(false);
 
+  // Personal contest timer
+  const [startedAt, setStartedAt] = useState<string | null>(null);
+  const [remainingSec, setRemainingSec] = useState<number | null>(null);
+  const [starting, setStarting] = useState(false);
+
   const activeProblem = problems[activeIdx];
+
+  // Fetch user's registration (incl. started_at) when contest/user known
+  useEffect(() => {
+    if (!contest || !user) { setStartedAt(null); return; }
+    (async () => {
+      const { data } = await supabase
+        .from("contest_registrations")
+        .select("started_at")
+        .eq("contest_id", contest.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setStartedAt((data as any)?.started_at ?? null);
+    })();
+  }, [contest?.id, user?.id, registered]);
+
+  // Tick personal countdown
+  useEffect(() => {
+    if (!startedAt || !contest) { setRemainingSec(null); return; }
+    const endMs = new Date(startedAt).getTime() + contest.duration_minutes * 60_000;
+    const tick = () => setRemainingSec(Math.max(0, Math.floor((endMs - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startedAt, contest?.duration_minutes]);
+
+  const timeUp = startedAt != null && remainingSec === 0;
+  const personalLocked = timeUp || contest?.status === "ended";
 
   useEffect(() => {
     if (!activeProblem) return;
@@ -85,11 +117,44 @@ export default function ContestArena() {
     }
   };
 
+  const startContest = async () => {
+    if (!contest || !user) return navigate("/auth");
+    if (contest.status !== "live") {
+      toast.error("Contest is not live yet.");
+      return;
+    }
+    setStarting(true);
+    const nowIso = new Date().toISOString();
+    const { error } = await supabase
+      .from("contest_registrations")
+      .update({ started_at: nowIso })
+      .eq("contest_id", contest.id)
+      .eq("user_id", user.id);
+    setStarting(false);
+    if (error) { toast.error(error.message); return; }
+    setStartedAt(nowIso);
+    toast.success(`Your ${contest.duration_minutes}-minute timer has started!`);
+  };
+
+  const fmtClock = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+  };
+
   const runOrSubmit = async (mode: "run" | "submit") => {
     if (!user) return navigate("/auth");
     if (!activeProblem?.problems) return;
     if (mode === "submit" && contest?.status !== "live") {
       toast.error("Submissions are only accepted while the contest is live.");
+      return;
+    }
+    if (personalLocked) {
+      toast.error("Your contest time is up — submissions are locked.");
+      return;
+    }
+    if (!startedAt) {
+      toast.error("Click 'Start Contest' to begin your personal timer first.");
       return;
     }
     mode === "run" ? setRunning(true) : setSubmitting(true);
@@ -280,7 +345,21 @@ export default function ContestArena() {
               </div>
 
               <div className="flex flex-col items-end gap-2">
-                {contest.status !== "ended" && (
+                {startedAt && remainingSec !== null ? (
+                  <div className={cn(
+                    "px-4 py-2 rounded-xl border font-mono text-2xl md:text-3xl font-bold tabular-nums backdrop-blur-sm",
+                    timeUp
+                      ? "border-destructive/50 bg-destructive/10 text-destructive"
+                      : remainingSec < 60
+                      ? "border-destructive/40 bg-destructive/5 text-destructive animate-pulse"
+                      : remainingSec < 300
+                      ? "border-[hsl(var(--warning))]/50 bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]"
+                      : "border-primary/40 bg-primary/5 text-primary",
+                  )}>
+                    <Timer className="inline h-5 w-5 mr-1.5 -mt-1" />
+                    {fmtClock(remainingSec)}
+                  </div>
+                ) : contest.status !== "ended" ? (
                   <CountdownTimer
                     days={countdown.days}
                     hours={countdown.hours}
@@ -288,12 +367,23 @@ export default function ContestArena() {
                     seconds={countdown.seconds}
                     size="md"
                   />
-                )}
+                ) : null}
                 <div className="flex gap-2">
                   {!registered && contest.status !== "ended" && (
                     <Button onClick={register} size="sm">
                       <Zap className="h-4 w-4 mr-1.5" /> Register
                     </Button>
+                  )}
+                  {registered && contest.status === "live" && !startedAt && (
+                    <Button onClick={startContest} size="sm" disabled={starting}>
+                      {starting ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Play className="h-4 w-4 mr-1.5" />}
+                      Start Contest ({contest.duration_minutes}m)
+                    </Button>
+                  )}
+                  {timeUp && (
+                    <Badge variant="outline" className="border-destructive/50 text-destructive bg-destructive/10">
+                      <Lock className="h-3 w-3 mr-1" /> Time's up
+                    </Badge>
                   )}
                   {contest.status === "ended" && (
                     <Button onClick={issueCertificate} size="sm" disabled={issuingCert}>
@@ -361,13 +451,13 @@ export default function ContestArena() {
                             </SelectContent>
                           </Select>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline" onClick={() => runOrSubmit("run")} disabled={running || submitting}>
+                            <Button size="sm" variant="outline" onClick={() => runOrSubmit("run")} disabled={running || submitting || personalLocked}>
                               {running ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Play className="h-3.5 w-3.5 mr-1.5" />}
                               Run
                             </Button>
-                            <Button size="sm" onClick={() => runOrSubmit("submit")} disabled={running || submitting || contest.status !== "live"}>
-                              {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Send className="h-3.5 w-3.5 mr-1.5" />}
-                              Submit
+                            <Button size="sm" onClick={() => runOrSubmit("submit")} disabled={running || submitting || contest.status !== "live" || personalLocked || !startedAt}>
+                              {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : personalLocked ? <Lock className="h-3.5 w-3.5 mr-1.5" /> : <Send className="h-3.5 w-3.5 mr-1.5" />}
+                              {personalLocked ? "Locked" : "Submit"}
                             </Button>
                           </div>
                         </div>
@@ -382,6 +472,7 @@ export default function ContestArena() {
                             fontSize: 14,
                             scrollBeyondLastLine: false,
                             automaticLayout: true,
+                            readOnly: personalLocked,
                           }}
                         />
                       </TabsContent>
