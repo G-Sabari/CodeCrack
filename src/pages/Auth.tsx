@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { lovable } from '@/integrations/lovable';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useToast } from '@/hooks/use-toast';
-import { Code2, Eye, EyeOff, Loader2, Mail, Lock, User, ArrowRight, Sparkles } from 'lucide-react';
+import { Code2, Eye, EyeOff, Loader2, Mail, Lock, User, ArrowRight, Sparkles, GraduationCap, Building2, ShieldCheck } from 'lucide-react';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -46,11 +47,7 @@ function FloatingInput({
         )}
       </div>
       {error && (
-        <motion.p
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-xs text-destructive pl-1"
-        >
+        <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-destructive pl-1">
           {error}
         </motion.p>
       )}
@@ -68,10 +65,14 @@ const signupSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   confirmPassword: z.string(),
+  collegeName: z.string().trim().min(2, { message: "College name is required" }).max(150),
+  department: z.string().trim().min(2, { message: "Department is required" }).max(100),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
+
+const OTP_TTL_SECONDS = 300; // 5 min
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -94,39 +95,60 @@ export default function Auth() {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
+  const [signupCollege, setSignupCollege] = useState('');
+  const [signupDepartment, setSignupDepartment] = useState('');
+
+  // OTP state
+  const [otpStep, setOtpStep] = useState(false);
+  const [otpEmail, setOtpEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpResendIn, setOtpResendIn] = useState(0);
+  const [otpExpiresIn, setOtpExpiresIn] = useState(OTP_TTL_SECONDS);
+  const tickRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (user) {
+    if (user && !otpStep) {
       navigate(from, { state: { showLoginAnimation: true }, replace: true });
     }
-  }, [user, navigate, from]);
+  }, [user, navigate, from, otpStep]);
+
+  // Countdown for resend + expiry
+  useEffect(() => {
+    if (!otpStep) return;
+    if (tickRef.current) clearInterval(tickRef.current);
+    tickRef.current = setInterval(() => {
+      setOtpResendIn((s) => (s > 0 ? s - 1 : 0));
+      setOtpExpiresIn((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => { if (tickRef.current) clearInterval(tickRef.current); };
+  }, [otpStep]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-    
     const result = loginSchema.safeParse({ email: loginEmail, password: loginPassword });
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
-      });
+      result.error.errors.forEach((err) => { if (err.path[0]) fieldErrors[err.path[0] as string] = err.message; });
       setErrors(fieldErrors);
       return;
     }
-
     setIsLoading(true);
     const { error } = await signIn(loginEmail, loginPassword);
     setIsLoading(false);
-
     if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        toast({ title: "Login Failed", description: "Invalid email or password.", variant: "destructive" });
-      } else if (error.message.includes('Email not confirmed')) {
-        toast({ title: "Email Not Confirmed", description: "Please check your email and confirm your account.", variant: "destructive" });
-      } else {
-        toast({ title: "Login Failed", description: error.message, variant: "destructive" });
+      if (error.message.includes('Email not confirmed')) {
+        toast({ title: "Verify your email first", description: "We'll send you a new 6-digit code.", variant: "destructive" });
+        await supabase.auth.resend({ type: 'signup', email: loginEmail });
+        setOtpEmail(loginEmail);
+        setOtpCode('');
+        setOtpExpiresIn(OTP_TTL_SECONDS);
+        setOtpResendIn(60);
+        setOtpStep(true);
+        return;
       }
+      toast({ title: "Login Failed", description: error.message.includes('Invalid login credentials') ? "Invalid email or password." : error.message, variant: "destructive" });
     } else {
       toast({ title: "Welcome back!", description: "You have successfully logged in." });
       navigate('/', { state: { showLoginAnimation: true }, replace: true });
@@ -136,205 +158,214 @@ export default function Auth() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-
     const result = signupSchema.safeParse({
       fullName: signupFullName, email: signupEmail,
       password: signupPassword, confirmPassword: signupConfirmPassword,
+      collegeName: signupCollege, department: signupDepartment,
     });
-
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
-      });
+      result.error.errors.forEach((err) => { if (err.path[0]) fieldErrors[err.path[0] as string] = err.message; });
       setErrors(fieldErrors);
       return;
     }
-
     setIsLoading(true);
-    const { error } = await signUp(signupEmail, signupPassword, signupFullName);
+    const { error } = await signUp(signupEmail, signupPassword, {
+      fullName: signupFullName,
+      collegeName: signupCollege,
+      department: signupDepartment,
+    });
     setIsLoading(false);
-
     if (error) {
       if (error.message.includes('User already registered')) {
         toast({ title: "Account Exists", description: "Please login instead.", variant: "destructive" });
       } else {
         toast({ title: "Signup Failed", description: error.message, variant: "destructive" });
       }
-    } else {
-      toast({ title: "Account Created!", description: "Please login to continue!" });
-      setActiveTab('login');
-      setSignupFullName(''); setSignupEmail(''); setSignupPassword(''); setSignupConfirmPassword('');
+      return;
     }
+    toast({ title: "Check your email", description: "We sent a 6-digit verification code." });
+    setOtpEmail(signupEmail);
+    setOtpCode('');
+    setOtpExpiresIn(OTP_TTL_SECONDS);
+    setOtpResendIn(60);
+    setOtpStep(true);
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpCode.length !== 6) {
+      toast({ title: "Enter the 6-digit code", variant: "destructive" });
+      return;
+    }
+    setOtpVerifying(true);
+    const { error } = await supabase.auth.verifyOtp({
+      email: otpEmail,
+      token: otpCode,
+      type: 'signup',
+    });
+    setOtpVerifying(false);
+    if (error) {
+      toast({ title: "Verification Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Email verified!", description: "Welcome to CodeCrack." });
+    setOtpStep(false);
+    navigate('/', { state: { showLoginAnimation: true }, replace: true });
+  };
+
+  const handleResendOtp = async () => {
+    if (otpResendIn > 0) return;
+    const { error } = await supabase.auth.resend({ type: 'signup', email: otpEmail });
+    if (error) {
+      toast({ title: "Couldn't resend", description: error.message, variant: "destructive" });
+      return;
+    }
+    setOtpExpiresIn(OTP_TTL_SECONDS);
+    setOtpResendIn(60);
+    toast({ title: "New code sent", description: "Check your inbox." });
   };
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
-    const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
+    const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     setIsGoogleLoading(false);
-    if (error) {
-      toast({ title: "Google Sign-In Failed", description: error.message || "Please try again.", variant: "destructive" });
-    }
+    if (error) toast({ title: "Google Sign-In Failed", description: error.message || "Please try again.", variant: "destructive" });
   };
+
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   return (
     <div className="min-h-screen animated-gradient-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-[hsl(var(--primary)/0.08)] rounded-full blur-[150px] animate-float-slow" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-[hsl(var(--accent)/0.06)] rounded-full blur-[120px] animate-float-slow" style={{ animationDelay: "7s" }} />
         <div className="absolute top-[30%] right-[20%] w-[200px] h-[200px] bg-[hsl(200,80%,60%,0.05)] rounded-full blur-[80px] animate-float" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="w-full max-w-[440px] relative z-10"
-      >
-        {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="flex items-center justify-center gap-2.5 mb-8"
-        >
+      <motion.div initial={{ opacity: 0, y: 20, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }} className="w-full max-w-[460px] relative z-10">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4 }} className="flex items-center justify-center gap-2.5 mb-8">
           <div className="w-11 h-11 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] rounded-xl flex items-center justify-center shadow-lg shadow-[hsl(var(--primary)/0.3)]">
             <Code2 className="w-6 h-6 text-primary-foreground" />
           </div>
           <span className="text-2xl font-bold gradient-text">CodeCrack</span>
         </motion.div>
 
-        {/* Glass card */}
         <div className="glass rounded-2xl p-8 shadow-[var(--shadow-float)]">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold mb-1.5">
-              {activeTab === 'login' ? 'Welcome Back' : 'Create Account'}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {activeTab === 'login' 
-                ? 'Sign in to continue your prep journey' 
-                : 'Join CodeCrack and ace your interviews'}
-            </p>
-          </div>
-
-          {/* Tab switcher */}
-          <div className="flex rounded-xl bg-secondary/40 p-1 mb-6">
-            {(['login', 'signup'] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => { setActiveTab(tab); setErrors({}); }}
-                className={cn(
-                  "flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-300",
-                  activeTab === tab
-                    ? "bg-primary text-primary-foreground shadow-md shadow-[hsl(var(--primary)/0.25)]"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {tab === 'login' ? 'Login' : 'Sign Up'}
-              </button>
-            ))}
-          </div>
-
           <AnimatePresence mode="wait">
-            {activeTab === 'login' ? (
-              <motion.form
-                key="login"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.25 }}
-                onSubmit={handleLogin}
-                className="space-y-4"
-              >
-                <FloatingInput id="login-email" label="Email address" icon={Mail} type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} error={errors.email} />
-                <FloatingInput id="login-password" label="Password" icon={Lock} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} error={errors.password} showToggle onToggle={() => setShowPassword(!showPassword)} showValue={showPassword} />
+            {otpStep ? (
+              <motion.div key="otp" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.25 }} className="space-y-5">
+                <div className="text-center">
+                  <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-[hsl(var(--accent))]/20 border border-primary/30 flex items-center justify-center mb-3">
+                    <ShieldCheck className="w-7 h-7 text-primary" />
+                  </div>
+                  <h1 className="text-2xl font-bold mb-1.5">Verify your email</h1>
+                  <p className="text-sm text-muted-foreground">
+                    Enter the 6-digit code sent to <span className="text-foreground font-medium">{otpEmail}</span>
+                  </p>
+                </div>
+
+                <div className="flex justify-center">
+                  <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                    <InputOTPGroup>
+                      {[0,1,2,3,4,5].map(i => <InputOTPSlot key={i} index={i} className="h-12 w-11 text-lg" />)}
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+
+                <div className="text-center text-xs text-muted-foreground">
+                  {otpExpiresIn > 0 ? (
+                    <>Code expires in <span className="text-foreground font-mono">{fmt(otpExpiresIn)}</span></>
+                  ) : (
+                    <span className="text-destructive">Code expired — resend a new one.</span>
+                  )}
+                </div>
+
+                <Button onClick={handleVerifyOtp} variant="neon" className="w-full h-12 rounded-xl text-base" disabled={otpVerifying || otpCode.length !== 6}>
+                  {otpVerifying ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Verifying...</> : <>Verify & Continue <ArrowRight className="ml-2 h-4 w-4" /></>}
+                </Button>
 
                 <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center gap-2 text-muted-foreground cursor-pointer">
-                    <input type="checkbox" className="rounded border-border bg-secondary/40 text-primary focus:ring-primary/50" />
-                    Remember me
-                  </label>
-                  <button type="button" className="text-primary hover:text-primary/80 transition-colors font-medium">
-                    Forgot password?
+                  <button type="button" onClick={() => { setOtpStep(false); setActiveTab('login'); }} className="text-muted-foreground hover:text-foreground">
+                    ← Back to login
+                  </button>
+                  <button type="button" onClick={handleResendOtp} disabled={otpResendIn > 0} className={cn("font-medium", otpResendIn > 0 ? "text-muted-foreground/60 cursor-not-allowed" : "text-primary hover:text-primary/80")}>
+                    {otpResendIn > 0 ? `Resend in ${otpResendIn}s` : "Resend code"}
                   </button>
                 </div>
-
-                <Button type="submit" variant="neon" className="w-full h-12 rounded-xl text-base" disabled={isLoading || isGoogleLoading}>
-                  {isLoading ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in...</>
-                  ) : (
-                    <>Sign In <ArrowRight className="ml-2 h-4 w-4" /></>
-                  )}
-                </Button>
-
-                <div className="relative my-5">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border/50" />
-                  </div>
-                  <span className="relative flex justify-center text-xs">
-                    <span className="bg-[hsl(var(--card)/0.6)] px-3 text-muted-foreground backdrop-blur-sm">or continue with</span>
-                  </span>
-                </div>
-
-                <Button type="button" variant="outline" className="w-full h-11 rounded-xl bg-secondary/30 border-border/50 hover:bg-secondary/50" onClick={handleGoogleLogin} disabled={isLoading || isGoogleLoading}>
-                  {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                      <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                      <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                  )}
-                  Continue with Google
-                </Button>
-              </motion.form>
+              </motion.div>
             ) : (
-              <motion.form
-                key="signup"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.25 }}
-                onSubmit={handleSignup}
-                className="space-y-4"
-              >
-                <FloatingInput id="signup-name" label="Full Name" icon={User} value={signupFullName} onChange={(e) => setSignupFullName(e.target.value)} error={errors.fullName} />
-                <FloatingInput id="signup-email" label="Email address" icon={Mail} type="email" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} error={errors.email} />
-                <FloatingInput id="signup-password" label="Password" icon={Lock} value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} error={errors.password} showToggle onToggle={() => setShowPassword(!showPassword)} showValue={showPassword} />
-                <FloatingInput id="signup-confirm" label="Confirm Password" icon={Lock} value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)} error={errors.confirmPassword} showToggle onToggle={() => setShowPassword(!showPassword)} showValue={showPassword} />
-
-                <Button type="submit" variant="neon" className="w-full h-12 rounded-xl text-base" disabled={isLoading || isGoogleLoading}>
-                  {isLoading ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating account...</>
-                  ) : (
-                    <>Create Account <Sparkles className="ml-2 h-4 w-4" /></>
-                  )}
-                </Button>
-
-                <div className="relative my-5">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border/50" />
-                  </div>
-                  <span className="relative flex justify-center text-xs">
-                    <span className="bg-[hsl(var(--card)/0.6)] px-3 text-muted-foreground backdrop-blur-sm">or continue with</span>
-                  </span>
+              <motion.div key="forms" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <div className="text-center mb-6">
+                  <h1 className="text-2xl font-bold mb-1.5">
+                    {activeTab === 'login' ? 'Welcome Back' : 'Create Account'}
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    {activeTab === 'login' ? 'Sign in to continue your prep journey' : 'Join CodeCrack and ace your interviews'}
+                  </p>
                 </div>
 
-                <Button type="button" variant="outline" className="w-full h-11 rounded-xl bg-secondary/30 border-border/50 hover:bg-secondary/50" onClick={handleGoogleLogin} disabled={isLoading || isGoogleLoading}>
-                  {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                      <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                      <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
+                <div className="flex rounded-xl bg-secondary/40 p-1 mb-6">
+                  {(['login', 'signup'] as const).map((tab) => (
+                    <button key={tab} onClick={() => { setActiveTab(tab); setErrors({}); }}
+                      className={cn("flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-300",
+                        activeTab === tab ? "bg-primary text-primary-foreground shadow-md shadow-[hsl(var(--primary)/0.25)]" : "text-muted-foreground hover:text-foreground"
+                      )}>
+                      {tab === 'login' ? 'Login' : 'Sign Up'}
+                    </button>
+                  ))}
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {activeTab === 'login' ? (
+                    <motion.form key="login" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.25 }} onSubmit={handleLogin} className="space-y-4">
+                      <FloatingInput id="login-email" label="Email address" icon={Mail} type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} error={errors.email} />
+                      <FloatingInput id="login-password" label="Password" icon={Lock} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} error={errors.password} showToggle onToggle={() => setShowPassword(!showPassword)} showValue={showPassword} />
+
+                      <Button type="submit" variant="neon" className="w-full h-12 rounded-xl text-base" disabled={isLoading || isGoogleLoading}>
+                        {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in...</> : <>Sign In <ArrowRight className="ml-2 h-4 w-4" /></>}
+                      </Button>
+
+                      <div className="relative my-5">
+                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/50" /></div>
+                        <span className="relative flex justify-center text-xs">
+                          <span className="bg-[hsl(var(--card)/0.6)] px-3 text-muted-foreground backdrop-blur-sm">or continue with</span>
+                        </span>
+                      </div>
+
+                      <Button type="button" variant="outline" className="w-full h-11 rounded-xl bg-secondary/30 border-border/50 hover:bg-secondary/50" onClick={handleGoogleLogin} disabled={isLoading || isGoogleLoading}>
+                        {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (
+                          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                          </svg>
+                        )}
+                        Continue with Google
+                      </Button>
+                    </motion.form>
+                  ) : (
+                    <motion.form key="signup" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }} onSubmit={handleSignup} className="space-y-4">
+                      <FloatingInput id="signup-name" label="Full Name" icon={User} value={signupFullName} onChange={(e) => setSignupFullName(e.target.value)} error={errors.fullName} />
+                      <FloatingInput id="signup-email" label="Email address" icon={Mail} type="email" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} error={errors.email} />
+                      <div className="grid grid-cols-2 gap-3">
+                        <FloatingInput id="signup-college" label="College" icon={GraduationCap} value={signupCollege} onChange={(e) => setSignupCollege(e.target.value)} error={errors.collegeName} />
+                        <FloatingInput id="signup-dept" label="Department" icon={Building2} value={signupDepartment} onChange={(e) => setSignupDepartment(e.target.value)} error={errors.department} />
+                      </div>
+                      <FloatingInput id="signup-password" label="Password" icon={Lock} value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} error={errors.password} showToggle onToggle={() => setShowPassword(!showPassword)} showValue={showPassword} />
+                      <FloatingInput id="signup-confirm" label="Confirm Password" icon={Lock} value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)} error={errors.confirmPassword} showToggle onToggle={() => setShowPassword(!showPassword)} showValue={showPassword} />
+
+                      <Button type="submit" variant="neon" className="w-full h-12 rounded-xl text-base" disabled={isLoading || isGoogleLoading}>
+                        {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating account...</> : <>Send Verification Code <Sparkles className="ml-2 h-4 w-4" /></>}
+                      </Button>
+
+                      <p className="text-[11px] text-muted-foreground text-center">
+                        We'll email you a 6-digit code to verify your address before you can sign in.
+                      </p>
+                    </motion.form>
                   )}
-                  Continue with Google
-                </Button>
-              </motion.form>
+                </AnimatePresence>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>
