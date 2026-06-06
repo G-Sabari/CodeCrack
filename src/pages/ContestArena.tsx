@@ -451,13 +451,13 @@ export default function ContestArena() {
                             </SelectContent>
                           </Select>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline" onClick={() => runOrSubmit("run")} disabled={running || submitting}>
+                            <Button size="sm" variant="outline" onClick={() => runOrSubmit("run")} disabled={running || submitting || personalLocked}>
                               {running ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Play className="h-3.5 w-3.5 mr-1.5" />}
                               Run
                             </Button>
-                            <Button size="sm" onClick={() => runOrSubmit("submit")} disabled={running || submitting || contest.status !== "live"}>
-                              {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Send className="h-3.5 w-3.5 mr-1.5" />}
-                              Submit
+                            <Button size="sm" onClick={() => runOrSubmit("submit")} disabled={running || submitting || contest.status !== "live" || personalLocked || !startedAt}>
+                              {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : personalLocked ? <Lock className="h-3.5 w-3.5 mr-1.5" /> : <Send className="h-3.5 w-3.5 mr-1.5" />}
+                              {personalLocked ? "Locked" : "Submit"}
                             </Button>
                           </div>
                         </div>
