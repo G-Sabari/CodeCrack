@@ -472,6 +472,7 @@ export default function ContestArena() {
                             fontSize: 14,
                             scrollBeyondLastLine: false,
                             automaticLayout: true,
+                            readOnly: personalLocked,
                           }}
                         />
                       </TabsContent>
