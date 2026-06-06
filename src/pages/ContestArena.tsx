@@ -149,6 +149,14 @@ export default function ContestArena() {
       toast.error("Submissions are only accepted while the contest is live.");
       return;
     }
+    if (personalLocked) {
+      toast.error("Your contest time is up — submissions are locked.");
+      return;
+    }
+    if (!startedAt) {
+      toast.error("Click 'Start Contest' to begin your personal timer first.");
+      return;
+    }
     mode === "run" ? setRunning(true) : setSubmitting(true);
     setLastResult(null);
     try {
