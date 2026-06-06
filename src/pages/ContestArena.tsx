@@ -345,7 +345,21 @@ export default function ContestArena() {
               </div>
 
               <div className="flex flex-col items-end gap-2">
-                {contest.status !== "ended" && (
+                {startedAt && remainingSec !== null ? (
+                  <div className={cn(
+                    "px-4 py-2 rounded-xl border font-mono text-2xl md:text-3xl font-bold tabular-nums backdrop-blur-sm",
+                    timeUp
+                      ? "border-destructive/50 bg-destructive/10 text-destructive"
+                      : remainingSec < 60
+                      ? "border-destructive/40 bg-destructive/5 text-destructive animate-pulse"
+                      : remainingSec < 300
+                      ? "border-[hsl(var(--warning))]/50 bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]"
+                      : "border-primary/40 bg-primary/5 text-primary",
+                  )}>
+                    <Timer className="inline h-5 w-5 mr-1.5 -mt-1" />
+                    {fmtClock(remainingSec)}
+                  </div>
+                ) : contest.status !== "ended" ? (
                   <CountdownTimer
                     days={countdown.days}
                     hours={countdown.hours}
@@ -353,12 +367,23 @@ export default function ContestArena() {
                     seconds={countdown.seconds}
                     size="md"
                   />
-                )}
+                ) : null}
                 <div className="flex gap-2">
                   {!registered && contest.status !== "ended" && (
                     <Button onClick={register} size="sm">
                       <Zap className="h-4 w-4 mr-1.5" /> Register
                     </Button>
+                  )}
+                  {registered && contest.status === "live" && !startedAt && (
+                    <Button onClick={startContest} size="sm" disabled={starting}>
+                      {starting ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Play className="h-4 w-4 mr-1.5" />}
+                      Start Contest ({contest.duration_minutes}m)
+                    </Button>
+                  )}
+                  {timeUp && (
+                    <Badge variant="outline" className="border-destructive/50 text-destructive bg-destructive/10">
+                      <Lock className="h-3 w-3 mr-1" /> Time's up
+                    </Badge>
                   )}
                   {contest.status === "ended" && (
                     <Button onClick={issueCertificate} size="sm" disabled={issuingCert}>
