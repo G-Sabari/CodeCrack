@@ -215,18 +215,21 @@ export type Database = {
           contest_id: string
           id: string
           registered_at: string
+          started_at: string | null
           user_id: string
         }
         Insert: {
           contest_id: string
           id?: string
           registered_at?: string
+          started_at?: string | null
           user_id: string
         }
         Update: {
           contest_id?: string
           id?: string
           registered_at?: string
+          started_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -444,7 +447,9 @@ export type Database = {
           explanation: string | null
           hints: string[] | null
           id: string
+          input_format: string | null
           interview_frequency: string | null
+          output_format: string | null
           problem_type: Database["public"]["Enums"]["problem_type"]
           sample_input: string | null
           sample_output: string | null
@@ -470,7 +475,9 @@ export type Database = {
           explanation?: string | null
           hints?: string[] | null
           id?: string
+          input_format?: string | null
           interview_frequency?: string | null
+          output_format?: string | null
           problem_type: Database["public"]["Enums"]["problem_type"]
           sample_input?: string | null
           sample_output?: string | null
@@ -496,7 +503,9 @@ export type Database = {
           explanation?: string | null
           hints?: string[] | null
           id?: string
+          input_format?: string | null
           interview_frequency?: string | null
+          output_format?: string | null
           problem_type?: Database["public"]["Enums"]["problem_type"]
           sample_input?: string | null
           sample_output?: string | null
@@ -518,7 +527,9 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          college_name: string | null
           created_at: string
+          department: string | null
           email: string | null
           full_name: string | null
           id: string
@@ -527,7 +538,9 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          college_name?: string | null
           created_at?: string
+          department?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
@@ -536,7 +549,9 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          college_name?: string | null
           created_at?: string
+          department?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
