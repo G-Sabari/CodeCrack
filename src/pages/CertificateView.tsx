@@ -144,11 +144,13 @@ export default function CertificateView() {
                   <p className="text-muted-foreground text-sm mb-1">has successfully completed</p>
                   <p className="text-xl font-semibold text-white mb-6">{cert.contest_title}</p>
 
-                  <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
+                  <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
                     <Stat label="Rank" value={`#${cert.rank}`} />
-                    <Stat label="Score" value={`${cert.score}`} />
-                    <Stat label="Total" value={`${cert.total_points}`} />
+                    <Stat label="Score" value={`${cert.score}/${cert.total_points}`} />
+                    <Stat label="Percentage" value={`${Number(cert.percentage ?? 0).toFixed(1)}%`} />
+                    <Stat label="Accuracy" value={`${Number(cert.accuracy ?? 0).toFixed(1)}%`} />
                   </div>
+
 
                   <p className="text-xs text-muted-foreground">
                     Issued {new Date(cert.issued_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
