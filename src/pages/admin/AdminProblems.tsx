@@ -42,7 +42,7 @@ const LANGS: { id: string; label: string; placeholder: string }[] = [
 
 const emptyDraft = (): Draft => ({
   difficulty: "Medium",
-  problem_type: "coding",
+  problem_type: "Coding",
   topic: "",
   tagsStr: "",
   starter: {},
