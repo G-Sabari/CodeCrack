@@ -124,10 +124,11 @@ export async function buildCertificatePdf(data: CertificateData, verifyUrl: stri
     pdf.setTextColor(150, 140, 200);
     pdf.text(s.label, x + statW / 2, statsY + 22, { align: "center" });
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(18);
+    pdf.setFontSize(15);
     pdf.setTextColor(255, 255, 255);
     pdf.text(s.value, x + statW / 2, statsY + 46, { align: "center" });
-    x += statW + 20;
+    x += statW + 16;
+
   }
 
   // Footer: date, code, qr
