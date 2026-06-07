@@ -16,7 +16,9 @@ type Contest = { id: string; title: string; slug: string; status: string; end_ti
 type Rule = {
   contest_id: string; enabled: boolean; participation_enabled: boolean;
   min_score: number; top_n: number; citation_prompt: string | null;
+  auto_generate: boolean; pass_percentage: number;
 };
+
 
 export default function AdminCertificates() {
   const [contests, setContests] = useState<Contest[]>([]);
