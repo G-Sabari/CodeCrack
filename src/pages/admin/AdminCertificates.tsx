@@ -49,9 +49,12 @@ export default function AdminCertificates() {
       min_score: existing?.min_score ?? 1,
       top_n: existing?.top_n ?? 3,
       citation_prompt: existing?.citation_prompt ?? null,
+      auto_generate: existing?.auto_generate ?? true,
+      pass_percentage: existing?.pass_percentage ?? 50,
       ...patch,
     };
     const { error } = await supabase.from("certificate_rules").upsert(payload, { onConflict: "contest_id" });
+
     if (error) toast.error(error.message);
     else setRules((r) => ({ ...r, [contest_id]: payload }));
   };
