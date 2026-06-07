@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       certificate_rules: {
         Row: {
+          auto_generate: boolean
           citation_prompt: string | null
           contest_id: string
           created_at: string
@@ -23,10 +24,12 @@ export type Database = {
           id: string
           min_score: number
           participation_enabled: boolean
+          pass_percentage: number
           top_n: number
           updated_at: string
         }
         Insert: {
+          auto_generate?: boolean
           citation_prompt?: string | null
           contest_id: string
           created_at?: string
@@ -34,10 +37,12 @@ export type Database = {
           id?: string
           min_score?: number
           participation_enabled?: boolean
+          pass_percentage?: number
           top_n?: number
           updated_at?: string
         }
         Update: {
+          auto_generate?: boolean
           citation_prompt?: string | null
           contest_id?: string
           created_at?: string
@@ -45,6 +50,7 @@ export type Database = {
           id?: string
           min_score?: number
           participation_enabled?: boolean
+          pass_percentage?: number
           top_n?: number
           updated_at?: string
         }
@@ -60,6 +66,7 @@ export type Database = {
       }
       certificates: {
         Row: {
+          accuracy: number
           certificate_type: string
           citation: string | null
           code: string
@@ -68,6 +75,7 @@ export type Database = {
           generated_by: string | null
           id: string
           issued_at: string
+          percentage: number
           rank: number
           recipient_name: string
           score: number
@@ -75,6 +83,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accuracy?: number
           certificate_type?: string
           citation?: string | null
           code: string
@@ -83,6 +92,7 @@ export type Database = {
           generated_by?: string | null
           id?: string
           issued_at?: string
+          percentage?: number
           rank: number
           recipient_name: string
           score: number
@@ -90,6 +100,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accuracy?: number
           certificate_type?: string
           citation?: string | null
           code?: string
@@ -98,6 +109,7 @@ export type Database = {
           generated_by?: string | null
           id?: string
           issued_at?: string
+          percentage?: number
           rank?: number
           recipient_name?: string
           score?: number
@@ -310,6 +322,7 @@ export type Database = {
           description: string | null
           duration_minutes: number
           end_time: string
+          finalized_at: string | null
           id: string
           slug: string
           start_time: string
@@ -327,6 +340,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           end_time: string
+          finalized_at?: string | null
           id?: string
           slug: string
           start_time: string
@@ -344,6 +358,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           end_time?: string
+          finalized_at?: string | null
           id?: string
           slug?: string
           start_time?: string

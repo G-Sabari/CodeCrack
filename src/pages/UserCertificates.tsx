@@ -15,7 +15,7 @@ import { FloatingParticles } from "@/components/contest/FloatingParticles";
 
 type Row = {
   id: string; code: string; recipient_name: string; contest_title: string;
-  rank: number; score: number; total_points: number; issued_at: string;
+  rank: number; score: number; total_points: number; issued_at: string; percentage: number; accuracy: number;
   certificate_type: string; citation: string | null;
 };
 
@@ -36,7 +36,7 @@ export default function UserCertificates() {
     (async () => {
       const { data } = await supabase
         .from("certificates")
-        .select("id, code, recipient_name, contest_title, rank, score, total_points, issued_at, certificate_type, citation")
+        .select("id, code, recipient_name, contest_title, rank, score, total_points, issued_at, certificate_type, citation, percentage, accuracy")
         .eq("user_id", user.id)
         .order("issued_at", { ascending: false });
       setRows((data as Row[]) ?? []);
@@ -50,7 +50,7 @@ export default function UserCertificates() {
       const verifyUrl = `${window.location.origin}/certificate/${r.code}`;
       const blob = await buildCertificatePdf({
         code: r.code, recipientName: r.recipient_name, contestTitle: r.contest_title,
-        rank: r.rank, score: r.score, totalPoints: r.total_points, issuedAt: r.issued_at,
+        rank: r.rank, score: r.score, totalPoints: r.total_points, issuedAt: r.issued_at, percentage: r.percentage, accuracy: r.accuracy,
         citation: r.citation ?? undefined, certificateType: r.certificate_type,
       }, verifyUrl);
       downloadBlob(blob, `${r.code}.pdf`);

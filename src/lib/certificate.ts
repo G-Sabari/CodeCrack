@@ -11,7 +11,10 @@ export type CertificateData = {
   issuedAt: string;
   citation?: string;
   certificateType?: string;
+  percentage?: number;
+  accuracy?: number;
 };
+
 
 
 function generateCode() {
@@ -102,14 +105,17 @@ export async function buildCertificatePdf(data: CertificateData, verifyUrl: stri
   // Stats row
   const stats = [
     { label: "RANK", value: `#${data.rank}` },
-    { label: "SCORE", value: `${data.score}` },
-    { label: "CONTEST", value: `${data.contestTitle.slice(0, 22)}` },
+    { label: "SCORE", value: `${data.score} / ${data.totalPoints}` },
+    { label: "PERCENTAGE", value: `${(data.percentage ?? 0).toFixed(1)}%` },
+    { label: "ACCURACY", value: `${(data.accuracy ?? 0).toFixed(1)}%` },
   ];
+
   const statsY = 380;
-  const statW = 160;
-  const totalW = stats.length * statW + (stats.length - 1) * 20;
+  const statW = 130;
+  const totalW = stats.length * statW + (stats.length - 1) * 16;
   let x = (w - totalW) / 2;
   for (const s of stats) {
+
     pdf.setDrawColor(80, 60, 140);
     pdf.setFillColor(30, 22, 60);
     pdf.roundedRect(x, statsY, statW, 60, 8, 8, "FD");
@@ -118,10 +124,11 @@ export async function buildCertificatePdf(data: CertificateData, verifyUrl: stri
     pdf.setTextColor(150, 140, 200);
     pdf.text(s.label, x + statW / 2, statsY + 22, { align: "center" });
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(18);
+    pdf.setFontSize(15);
     pdf.setTextColor(255, 255, 255);
     pdf.text(s.value, x + statW / 2, statsY + 46, { align: "center" });
-    x += statW + 20;
+    x += statW + 16;
+
   }
 
   // Footer: date, code, qr

@@ -9,4 +9,8 @@ verify_jwt = false
 [functions.generate-certificates]
 verify_jwt = false
 
+[functions.auto-finalize-contests]
+verify_jwt = false
+
+
 
