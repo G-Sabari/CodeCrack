@@ -101,16 +101,18 @@ export default function AdminCertificates() {
                     <Switch checked={r?.enabled ?? false} onCheckedChange={(v) => saveRule(c.id, { enabled: v })} />
                   </div>
                   <div className="flex items-center justify-between rounded-lg border p-3">
-                    <div><Label className="cursor-pointer">Participation certificates</Label>
-                      <p className="text-xs text-muted-foreground">Issue to everyone meeting min score</p></div>
-                    <Switch checked={r?.participation_enabled ?? true} onCheckedChange={(v) => saveRule(c.id, { participation_enabled: v })} />
+                    <div><Label className="cursor-pointer">Auto-generate when contest ends</Label>
+                      <p className="text-xs text-muted-foreground">Runs automatically every 5 minutes after end time</p></div>
+                    <Switch checked={r?.auto_generate ?? true} onCheckedChange={(v) => saveRule(c.id, { auto_generate: v })} />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label className="text-xs">Min score</Label>
-                      <Input type="number" value={r?.min_score ?? 1} onChange={(e) => saveRule(c.id, { min_score: +e.target.value })} /></div>
+                    <div><Label className="text-xs">Pass percentage (%)</Label>
+                      <Input type="number" min={0} max={100} value={r?.pass_percentage ?? 50} onChange={(e) => saveRule(c.id, { pass_percentage: +e.target.value })} />
+                      <p className="text-[10px] text-muted-foreground mt-1">Only users scoring more than this % get certificates</p></div>
                     <div><Label className="text-xs">Top N (winners + top performers)</Label>
                       <Input type="number" value={r?.top_n ?? 3} onChange={(e) => saveRule(c.id, { top_n: +e.target.value })} /></div>
                   </div>
+
                 </div>
                 <div className="space-y-3">
                   <div>
