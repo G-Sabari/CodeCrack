@@ -42,7 +42,7 @@ const LANGS: { id: string; label: string; placeholder: string }[] = [
 
 const emptyDraft = (): Draft => ({
   difficulty: "Medium",
-  problem_type: "coding",
+  problem_type: "Coding",
   topic: "",
   tagsStr: "",
   starter: {},
@@ -173,13 +173,16 @@ export default function AdminProblems() {
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <Label>Type</Label>
-                      <Select value={editing.problem_type ?? "coding"} onValueChange={(v) => setEditing({ ...editing, problem_type: v })}>
+                      <Select value={editing.problem_type ?? "Coding"} onValueChange={(v) => setEditing({ ...editing, problem_type: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="coding">Coding</SelectItem>
-                          <SelectItem value="aptitude">Aptitude</SelectItem>
+                          <SelectItem value="Coding">Coding</SelectItem>
+                          <SelectItem value="Aptitude">Aptitude</SelectItem>
+                          <SelectItem value="Behavioral">Behavioral</SelectItem>
+                          <SelectItem value="GD">GD</SelectItem>
                         </SelectContent>
                       </Select>
+
                     </div>
                     <div>
                       <Label>Difficulty</Label>
