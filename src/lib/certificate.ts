@@ -105,9 +105,11 @@ export async function buildCertificatePdf(data: CertificateData, verifyUrl: stri
   // Stats row
   const stats = [
     { label: "RANK", value: `#${data.rank}` },
-    { label: "SCORE", value: `${data.score}` },
-    { label: "CONTEST", value: `${data.contestTitle.slice(0, 22)}` },
+    { label: "SCORE", value: `${data.score} / ${data.totalPoints}` },
+    { label: "PERCENTAGE", value: `${(data.percentage ?? 0).toFixed(1)}%` },
+    { label: "ACCURACY", value: `${(data.accuracy ?? 0).toFixed(1)}%` },
   ];
+
   const statsY = 380;
   const statW = 160;
   const totalW = stats.length * statW + (stats.length - 1) * 20;
