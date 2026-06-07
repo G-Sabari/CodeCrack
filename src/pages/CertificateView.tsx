@@ -40,10 +40,11 @@ export default function CertificateView() {
     (async () => {
       const { data } = await supabase
         .from("certificates")
-        .select("id, code, recipient_name, contest_title, rank, score, total_points, issued_at")
+        .select("id, code, recipient_name, contest_title, rank, score, total_points, issued_at, percentage, accuracy, citation, certificate_type")
         .eq("code", code)
         .maybeSingle();
-      setCert(data);
+      setCert(data as any);
+
       setLoading(false);
     })();
   }, [code]);
