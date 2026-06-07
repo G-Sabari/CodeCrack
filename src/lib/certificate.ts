@@ -111,10 +111,11 @@ export async function buildCertificatePdf(data: CertificateData, verifyUrl: stri
   ];
 
   const statsY = 380;
-  const statW = 160;
-  const totalW = stats.length * statW + (stats.length - 1) * 20;
+  const statW = 130;
+  const totalW = stats.length * statW + (stats.length - 1) * 16;
   let x = (w - totalW) / 2;
   for (const s of stats) {
+
     pdf.setDrawColor(80, 60, 140);
     pdf.setFillColor(30, 22, 60);
     pdf.roundedRect(x, statsY, statW, 60, 8, 8, "FD");
