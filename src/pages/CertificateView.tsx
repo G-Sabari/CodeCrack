@@ -22,7 +22,12 @@ type Cert = {
   score: number;
   total_points: number;
   issued_at: string;
+  percentage: number;
+  accuracy: number;
+  citation: string | null;
+  certificate_type: string;
 };
+
 
 export default function CertificateView() {
   const { code } = useParams<{ code: string }>();
