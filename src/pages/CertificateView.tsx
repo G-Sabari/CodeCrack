@@ -63,10 +63,15 @@ export default function CertificateView() {
           score: cert.score,
           totalPoints: cert.total_points,
           issuedAt: cert.issued_at,
+          percentage: cert.percentage,
+          accuracy: cert.accuracy,
+          citation: cert.citation ?? undefined,
+          certificateType: cert.certificate_type,
         },
         verifyUrl,
       );
       downloadBlob(blob, `${cert.code}.pdf`);
+
     } finally {
       setDownloading(false);
     }
