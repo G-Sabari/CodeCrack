@@ -11,7 +11,10 @@ export type CertificateData = {
   issuedAt: string;
   citation?: string;
   certificateType?: string;
+  percentage?: number;
+  accuracy?: number;
 };
+
 
 
 function generateCode() {
