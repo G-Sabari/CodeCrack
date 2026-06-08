@@ -137,6 +137,7 @@ export async function finalizeContest(
       certificate_type: type,
       citation,
       generated_by: generatedBy,
+      status: "pending",
     });
   }
 
