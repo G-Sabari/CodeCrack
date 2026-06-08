@@ -102,7 +102,43 @@ export default function AdminCertificates() {
 
   return (
     <AdminShell title="Certificate System">
+      <Card className="mb-6 border-yellow-500/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Clock className="h-4 w-4 text-yellow-500" /> Approval Queue
+            <Badge variant="outline" className="text-xs">{pending.length} pending</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {pending.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">No certificates awaiting approval.</p>
+          ) : pending.map((p) => (
+            <div key={p.id} className="rounded-lg border p-3 flex flex-wrap items-center gap-3">
+              <div className="flex-1 min-w-[220px]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium text-sm">{p.recipient_name}</p>
+                  <Badge variant="outline" className="text-xs">Rank #{p.rank}</Badge>
+                  <Badge variant="outline" className="text-xs">{p.certificate_type}</Badge>
+                  <Badge className="text-xs">{Number(p.percentage).toFixed(1)}%</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">{p.contest_title} · {p.score}/{p.total_points} pts · <span className="font-mono">{p.code}</span></p>
+                {p.citation && <p className="text-xs italic text-muted-foreground mt-1 line-clamp-1">"{p.citation}"</p>}
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => decide(p.id, false, prompt("Reason for rejection (optional)") || undefined)} disabled={acting === p.id}>
+                  <X className="h-3.5 w-3.5 mr-1" /> Reject
+                </Button>
+                <Button size="sm" onClick={() => decide(p.id, true)} disabled={acting === p.id}>
+                  {acting === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5 mr-1" /> Approve</>}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
       <div className="space-y-4">
+
         {contests.map((c) => {
           const r = rules[c.id];
           const ended = new Date(c.end_time).getTime() < Date.now();
