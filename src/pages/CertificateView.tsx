@@ -26,6 +26,7 @@ type Cert = {
   accuracy: number;
   citation: string | null;
   certificate_type: string;
+  status: string;
 };
 
 
