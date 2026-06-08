@@ -9,8 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Sparkles, Loader2, ExternalLink } from "lucide-react";
+import { Sparkles, Loader2, ExternalLink, Check, X, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+
+type PendingCert = {
+  id: string; code: string; recipient_name: string; contest_title: string;
+  rank: number; score: number; total_points: number; percentage: number;
+  certificate_type: string; citation: string | null; status: string;
+  issued_at: string;
+};
 
 type Contest = { id: string; title: string; slug: string; status: string; end_time: string; total_points: number };
 type Rule = {
@@ -25,6 +32,8 @@ export default function AdminCertificates() {
   const [rules, setRules] = useState<Record<string, Rule>>({});
   const [generating, setGenerating] = useState<string | null>(null);
   const [issuedCounts, setIssuedCounts] = useState<Record<string, number>>({});
+  const [pending, setPending] = useState<PendingCert[]>([]);
+  const [acting, setActing] = useState<string | null>(null);
 
   const load = async () => {
     const { data: c } = await supabase.from("contests").select("id,title,slug,status,end_time,total_points").order("end_time", { ascending: false });
@@ -33,12 +42,30 @@ export default function AdminCertificates() {
     const map: Record<string, Rule> = {};
     (r ?? []).forEach((row: any) => { map[row.contest_id] = row; });
     setRules(map);
-    const { data: certs } = await supabase.from("certificates").select("contest_id");
+    const { data: certs } = await supabase.from("certificates").select("contest_id, status" as any);
     const cnt: Record<string, number> = {};
-    (certs ?? []).forEach((x: any) => { cnt[x.contest_id] = (cnt[x.contest_id] ?? 0) + 1; });
+    (certs ?? []).forEach((x: any) => { if (x.status === "approved") cnt[x.contest_id] = (cnt[x.contest_id] ?? 0) + 1; });
     setIssuedCounts(cnt);
+    const { data: pend } = await (supabase as any)
+      .from("certificates")
+      .select("id, code, recipient_name, contest_title, rank, score, total_points, percentage, certificate_type, citation, status, issued_at")
+      .eq("status", "pending")
+      .order("issued_at", { ascending: false });
+    setPending((pend as any) ?? []);
   };
   useEffect(() => { load(); }, []);
+
+  const decide = async (id: string, approve: boolean, reason?: string) => {
+    setActing(id);
+    const patch: any = approve
+      ? { status: "approved", approved_at: new Date().toISOString() }
+      : { status: "rejected", rejected_reason: reason || "Rejected by administrator" };
+    const { error } = await supabase.from("certificates").update(patch).eq("id", id);
+    setActing(null);
+    if (error) toast.error(error.message);
+    else { toast.success(approve ? "Certificate approved" : "Certificate rejected"); load(); }
+  };
+
 
   const saveRule = async (contest_id: string, patch: Partial<Rule>) => {
     const existing = rules[contest_id];
@@ -75,7 +102,43 @@ export default function AdminCertificates() {
 
   return (
     <AdminShell title="Certificate System">
+      <Card className="mb-6 border-yellow-500/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Clock className="h-4 w-4 text-yellow-500" /> Approval Queue
+            <Badge variant="outline" className="text-xs">{pending.length} pending</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {pending.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">No certificates awaiting approval.</p>
+          ) : pending.map((p) => (
+            <div key={p.id} className="rounded-lg border p-3 flex flex-wrap items-center gap-3">
+              <div className="flex-1 min-w-[220px]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium text-sm">{p.recipient_name}</p>
+                  <Badge variant="outline" className="text-xs">Rank #{p.rank}</Badge>
+                  <Badge variant="outline" className="text-xs">{p.certificate_type}</Badge>
+                  <Badge className="text-xs">{Number(p.percentage).toFixed(1)}%</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">{p.contest_title} · {p.score}/{p.total_points} pts · <span className="font-mono">{p.code}</span></p>
+                {p.citation && <p className="text-xs italic text-muted-foreground mt-1 line-clamp-1">"{p.citation}"</p>}
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => decide(p.id, false, prompt("Reason for rejection (optional)") || undefined)} disabled={acting === p.id}>
+                  <X className="h-3.5 w-3.5 mr-1" /> Reject
+                </Button>
+                <Button size="sm" onClick={() => decide(p.id, true)} disabled={acting === p.id}>
+                  {acting === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5 mr-1" /> Approve</>}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
       <div className="space-y-4">
+
         {contests.map((c) => {
           const r = rules[c.id];
           const ended = new Date(c.end_time).getTime() < Date.now();

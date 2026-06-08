@@ -16,7 +16,7 @@ import { FloatingParticles } from "@/components/contest/FloatingParticles";
 type Row = {
   id: string; code: string; recipient_name: string; contest_title: string;
   rank: number; score: number; total_points: number; issued_at: string; percentage: number; accuracy: number;
-  certificate_type: string; citation: string | null;
+  certificate_type: string; citation: string | null; status: string; rejected_reason: string | null;
 };
 
 const typeLabel: Record<string, string> = {
@@ -36,10 +36,10 @@ export default function UserCertificates() {
     (async () => {
       const { data } = await supabase
         .from("certificates")
-        .select("id, code, recipient_name, contest_title, rank, score, total_points, issued_at, certificate_type, citation, percentage, accuracy")
+        .select("id, code, recipient_name, contest_title, rank, score, total_points, issued_at, certificate_type, citation, percentage, accuracy, status, rejected_reason")
         .eq("user_id", user.id)
         .order("issued_at", { ascending: false });
-      setRows((data as Row[]) ?? []);
+      setRows((data as any as Row[]) ?? []);
       setLoading(false);
     })();
   }, [user]);
@@ -81,8 +81,12 @@ export default function UserCertificates() {
             </CardContent></Card>
           ) : (
             <div className="grid gap-3">
-              {rows.map((r) => (
-                <Card key={r.id} className="overflow-hidden border-primary/20">
+              {rows.map((r) => {
+                const approved = r.status === "approved";
+                const pending = r.status === "pending";
+                const rejected = r.status === "rejected";
+                return (
+                <Card key={r.id} className={`overflow-hidden ${approved ? "border-primary/20" : pending ? "border-yellow-500/30" : "border-destructive/30"}`}>
                   <CardContent className="p-5 flex flex-wrap items-center gap-4">
                     <div className="flex-1 min-w-[200px]">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -91,21 +95,34 @@ export default function UserCertificates() {
                           {typeLabel[r.certificate_type] ?? r.certificate_type}
                         </Badge>
                         <Badge variant="outline" className="text-xs">Rank #{r.rank}</Badge>
+                        {pending && <Badge className="text-xs bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30">Pending admin approval</Badge>}
+                        {rejected && <Badge variant="destructive" className="text-xs">Rejected</Badge>}
+                        {approved && <Badge className="text-xs bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">Approved</Badge>}
                       </div>
-                      {r.citation && <p className="text-xs text-muted-foreground italic mt-2 line-clamp-2">"{r.citation}"</p>}
+                      {r.citation && approved && <p className="text-xs text-muted-foreground italic mt-2 line-clamp-2">"{r.citation}"</p>}
+                      {rejected && r.rejected_reason && <p className="text-xs text-destructive mt-2">Reason: {r.rejected_reason}</p>}
                       <p className="text-xs text-muted-foreground font-mono mt-1">{r.code}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" asChild>
-                        <Link to={`/certificate/${r.code}`}><ExternalLink className="h-3.5 w-3.5 mr-1" /> View</Link>
-                      </Button>
-                      <Button size="sm" onClick={() => download(r)} disabled={downloadingId === r.id}>
-                        {downloadingId === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1" />} PDF
-                      </Button>
+                      {approved ? (
+                        <>
+                          <Button size="sm" variant="outline" asChild>
+                            <Link to={`/certificate/${r.code}`}><ExternalLink className="h-3.5 w-3.5 mr-1" /> View</Link>
+                          </Button>
+                          <Button size="sm" onClick={() => download(r)} disabled={downloadingId === r.id}>
+                            {downloadingId === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1" />} PDF
+                          </Button>
+                        </>
+                      ) : (
+                        <Button size="sm" variant="outline" disabled>
+                          {pending ? "Awaiting approval" : "Unavailable"}
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
