@@ -32,6 +32,8 @@ export default function AdminCertificates() {
   const [rules, setRules] = useState<Record<string, Rule>>({});
   const [generating, setGenerating] = useState<string | null>(null);
   const [issuedCounts, setIssuedCounts] = useState<Record<string, number>>({});
+  const [pending, setPending] = useState<PendingCert[]>([]);
+  const [acting, setActing] = useState<string | null>(null);
 
   const load = async () => {
     const { data: c } = await supabase.from("contests").select("id,title,slug,status,end_time,total_points").order("end_time", { ascending: false });
@@ -40,12 +42,30 @@ export default function AdminCertificates() {
     const map: Record<string, Rule> = {};
     (r ?? []).forEach((row: any) => { map[row.contest_id] = row; });
     setRules(map);
-    const { data: certs } = await supabase.from("certificates").select("contest_id");
+    const { data: certs } = await supabase.from("certificates").select("contest_id, status" as any);
     const cnt: Record<string, number> = {};
-    (certs ?? []).forEach((x: any) => { cnt[x.contest_id] = (cnt[x.contest_id] ?? 0) + 1; });
+    (certs ?? []).forEach((x: any) => { if (x.status === "approved") cnt[x.contest_id] = (cnt[x.contest_id] ?? 0) + 1; });
     setIssuedCounts(cnt);
+    const { data: pend } = await supabase
+      .from("certificates")
+      .select("id, code, recipient_name, contest_title, rank, score, total_points, percentage, certificate_type, citation, status, issued_at" as any)
+      .eq("status" as any, "pending")
+      .order("issued_at", { ascending: false });
+    setPending((pend as any) ?? []);
   };
   useEffect(() => { load(); }, []);
+
+  const decide = async (id: string, approve: boolean, reason?: string) => {
+    setActing(id);
+    const patch: any = approve
+      ? { status: "approved", approved_at: new Date().toISOString() }
+      : { status: "rejected", rejected_reason: reason || "Rejected by administrator" };
+    const { error } = await supabase.from("certificates").update(patch).eq("id", id);
+    setActing(null);
+    if (error) toast.error(error.message);
+    else { toast.success(approve ? "Certificate approved" : "Certificate rejected"); load(); }
+  };
+
 
   const saveRule = async (contest_id: string, patch: Partial<Rule>) => {
     const existing = rules[contest_id];
