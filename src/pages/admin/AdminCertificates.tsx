@@ -9,8 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Sparkles, Loader2, ExternalLink } from "lucide-react";
+import { Sparkles, Loader2, ExternalLink, Check, X, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+
+type PendingCert = {
+  id: string; code: string; recipient_name: string; contest_title: string;
+  rank: number; score: number; total_points: number; percentage: number;
+  certificate_type: string; citation: string | null; status: string;
+  issued_at: string;
+};
 
 type Contest = { id: string; title: string; slug: string; status: string; end_time: string; total_points: number };
 type Rule = {
