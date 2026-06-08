@@ -41,7 +41,7 @@ export default function CertificateView() {
     (async () => {
       const { data } = await supabase
         .from("certificates")
-        .select("id, code, recipient_name, contest_title, rank, score, total_points, issued_at, percentage, accuracy, citation, certificate_type")
+        .select("id, code, recipient_name, contest_title, rank, score, total_points, issued_at, percentage, accuracy, citation, certificate_type, status")
         .eq("code", code)
         .maybeSingle();
       setCert(data as any);
@@ -106,11 +106,27 @@ export default function CertificateView() {
             <Card className="border-destructive/30 bg-destructive/5">
               <CardContent className="py-16 text-center">
                 <ShieldX className="h-12 w-12 text-destructive mx-auto mb-3" />
-                <h2 className="text-xl font-bold mb-1">Invalid certificate</h2>
+                <h2 className="text-xl font-bold mb-1">Certificate not available</h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  No certificate with code <span className="font-mono">{code}</span> was found.
+                  No approved certificate with code <span className="font-mono">{code}</span> was found.
+                  It may be invalid, pending admin approval, or rejected.
                 </p>
                 <Link to="/contest"><Button variant="outline">Back to Contests</Button></Link>
+              </CardContent>
+            </Card>
+          ) : cert.status !== "approved" ? (
+            <Card className="border-yellow-500/30 bg-yellow-500/5">
+              <CardContent className="py-16 text-center">
+                <ShieldX className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
+                <h2 className="text-xl font-bold mb-1">
+                  {cert.status === "rejected" ? "Certificate rejected" : "Awaiting admin approval"}
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {cert.status === "rejected"
+                    ? "An administrator has rejected this certificate."
+                    : "This certificate has been generated but is pending administrator approval before it can be issued."}
+                </p>
+                <Link to="/certificates"><Button variant="outline">My Certificates</Button></Link>
               </CardContent>
             </Card>
           ) : (
