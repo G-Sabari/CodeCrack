@@ -67,6 +67,8 @@ export type Database = {
       certificates: {
         Row: {
           accuracy: number
+          approved_at: string | null
+          approved_by: string | null
           certificate_type: string
           citation: string | null
           code: string
@@ -78,12 +80,16 @@ export type Database = {
           percentage: number
           rank: number
           recipient_name: string
+          rejected_reason: string | null
           score: number
+          status: string
           total_points: number
           user_id: string
         }
         Insert: {
           accuracy?: number
+          approved_at?: string | null
+          approved_by?: string | null
           certificate_type?: string
           citation?: string | null
           code: string
@@ -95,12 +101,16 @@ export type Database = {
           percentage?: number
           rank: number
           recipient_name: string
+          rejected_reason?: string | null
           score: number
+          status?: string
           total_points: number
           user_id: string
         }
         Update: {
           accuracy?: number
+          approved_at?: string | null
+          approved_by?: string | null
           certificate_type?: string
           citation?: string | null
           code?: string
@@ -112,7 +122,9 @@ export type Database = {
           percentage?: number
           rank?: number
           recipient_name?: string
+          rejected_reason?: string | null
           score?: number
+          status?: string
           total_points?: number
           user_id?: string
         }
