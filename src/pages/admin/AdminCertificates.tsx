@@ -46,10 +46,10 @@ export default function AdminCertificates() {
     const cnt: Record<string, number> = {};
     (certs ?? []).forEach((x: any) => { if (x.status === "approved") cnt[x.contest_id] = (cnt[x.contest_id] ?? 0) + 1; });
     setIssuedCounts(cnt);
-    const { data: pend } = await supabase
+    const { data: pend } = await (supabase as any)
       .from("certificates")
-      .select("id, code, recipient_name, contest_title, rank, score, total_points, percentage, certificate_type, citation, status, issued_at" as any)
-      .eq("status" as any, "pending")
+      .select("id, code, recipient_name, contest_title, rank, score, total_points, percentage, certificate_type, citation, status, issued_at")
+      .eq("status", "pending")
       .order("issued_at", { ascending: false });
     setPending((pend as any) ?? []);
   };
