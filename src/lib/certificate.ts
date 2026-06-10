@@ -49,7 +49,7 @@ export async function buildCertificatePdf(data: CertificateData, verifyUrl: stri
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(14);
   pdf.setTextColor(170, 160, 200);
-  pdf.text("CodeCrack • Weekly Contest", w / 2, 138, { align: "center" });
+  pdf.text("CodeCrack • Verified Achievement", w / 2, 138, { align: "center" });
 
   pdf.setFontSize(16);
   pdf.text("This certifies that", w / 2, 200, { align: "center" });

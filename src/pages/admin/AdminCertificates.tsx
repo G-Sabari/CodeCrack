@@ -1,131 +1,83 @@
 import { useEffect, useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Sparkles, Loader2, ExternalLink, Check, X, Clock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Loader2, Check, X, Clock, Award } from "lucide-react";
 
-type PendingCert = {
-  id: string; code: string; recipient_name: string; contest_title: string;
-  rank: number; score: number; total_points: number; percentage: number;
-  certificate_type: string; citation: string | null; status: string;
+type Cert = {
+  id: string;
+  code: string;
+  recipient_name: string;
+  contest_title: string; // we store problem title here
+  status: string;
   issued_at: string;
+  approved_at: string | null;
+  rejected_reason: string | null;
 };
-
-type Contest = { id: string; title: string; slug: string; status: string; end_time: string; total_points: number };
-type Rule = {
-  contest_id: string; enabled: boolean; participation_enabled: boolean;
-  min_score: number; top_n: number; citation_prompt: string | null;
-  auto_generate: boolean; pass_percentage: number;
-};
-
 
 export default function AdminCertificates() {
-  const [contests, setContests] = useState<Contest[]>([]);
-  const [rules, setRules] = useState<Record<string, Rule>>({});
-  const [generating, setGenerating] = useState<string | null>(null);
-  const [issuedCounts, setIssuedCounts] = useState<Record<string, number>>({});
-  const [pending, setPending] = useState<PendingCert[]>([]);
+  const [pending, setPending] = useState<Cert[]>([]);
+  const [history, setHistory] = useState<Cert[]>([]);
   const [acting, setActing] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const { data: c } = await supabase.from("contests").select("id,title,slug,status,end_time,total_points").order("end_time", { ascending: false });
-    setContests((c as Contest[]) ?? []);
-    const { data: r } = await supabase.from("certificate_rules").select("*");
-    const map: Record<string, Rule> = {};
-    (r ?? []).forEach((row: any) => { map[row.contest_id] = row; });
-    setRules(map);
-    const { data: certs } = await supabase.from("certificates").select("contest_id, status" as any);
-    const cnt: Record<string, number> = {};
-    (certs ?? []).forEach((x: any) => { if (x.status === "approved") cnt[x.contest_id] = (cnt[x.contest_id] ?? 0) + 1; });
-    setIssuedCounts(cnt);
-    const { data: pend } = await (supabase as any)
+    setLoading(true);
+    const { data } = await supabase
       .from("certificates")
-      .select("id, code, recipient_name, contest_title, rank, score, total_points, percentage, certificate_type, citation, status, issued_at")
-      .eq("status", "pending")
-      .order("issued_at", { ascending: false });
-    setPending((pend as any) ?? []);
+      .select("id, code, recipient_name, contest_title, status, issued_at, approved_at, rejected_reason")
+      .order("issued_at", { ascending: false })
+      .limit(200);
+    const all = (data as Cert[]) ?? [];
+    setPending(all.filter((c) => c.status === "pending"));
+    setHistory(all.filter((c) => c.status !== "pending"));
+    setLoading(false);
   };
+
   useEffect(() => { load(); }, []);
 
-  const decide = async (id: string, approve: boolean, reason?: string) => {
+  const decide = async (id: string, approve: boolean) => {
     setActing(id);
+    const reason = approve ? null : (prompt("Reason for rejection (optional)") || "Rejected by administrator");
     const patch: any = approve
       ? { status: "approved", approved_at: new Date().toISOString() }
-      : { status: "rejected", rejected_reason: reason || "Rejected by administrator" };
+      : { status: "rejected", rejected_reason: reason };
     const { error } = await supabase.from("certificates").update(patch).eq("id", id);
     setActing(null);
     if (error) toast.error(error.message);
     else { toast.success(approve ? "Certificate approved" : "Certificate rejected"); load(); }
   };
 
-
-  const saveRule = async (contest_id: string, patch: Partial<Rule>) => {
-    const existing = rules[contest_id];
-    const payload: any = {
-      contest_id,
-      enabled: existing?.enabled ?? false,
-      participation_enabled: existing?.participation_enabled ?? true,
-      min_score: existing?.min_score ?? 1,
-      top_n: existing?.top_n ?? 3,
-      citation_prompt: existing?.citation_prompt ?? null,
-      auto_generate: existing?.auto_generate ?? true,
-      pass_percentage: existing?.pass_percentage ?? 50,
-      ...patch,
-    };
-    const { error } = await supabase.from("certificate_rules").upsert(payload, { onConflict: "contest_id" });
-
-    if (error) toast.error(error.message);
-    else setRules((r) => ({ ...r, [contest_id]: payload }));
-  };
-
-  const generate = async (contest_id: string) => {
-    setGenerating(contest_id);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-certificates", { body: { contest_id } });
-      if (error) throw error;
-      toast.success(`Issued ${data?.issued ?? 0} certificates`);
-      load();
-    } catch (e: any) {
-      toast.error(e.message || "Generation failed");
-    } finally {
-      setGenerating(null);
-    }
-  };
-
   return (
-    <AdminShell title="Certificate System">
+    <AdminShell title="Certificate Requests">
       <Card className="mb-6 border-yellow-500/30">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Clock className="h-4 w-4 text-yellow-500" /> Approval Queue
-            <Badge variant="outline" className="text-xs">{pending.length} pending</Badge>
+            <Clock className="h-4 w-4 text-yellow-500" /> Pending Requests
+            <Badge variant="outline" className="text-xs">{pending.length}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {pending.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">No certificates awaiting approval.</p>
+          {loading ? (
+            <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+          ) : pending.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">No certificate requests awaiting approval.</p>
           ) : pending.map((p) => (
             <div key={p.id} className="rounded-lg border p-3 flex flex-wrap items-center gap-3">
               <div className="flex-1 min-w-[220px]">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-medium text-sm">{p.recipient_name}</p>
-                  <Badge variant="outline" className="text-xs">Rank #{p.rank}</Badge>
-                  <Badge variant="outline" className="text-xs">{p.certificate_type}</Badge>
-                  <Badge className="text-xs">{Number(p.percentage).toFixed(1)}%</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">{p.contest_title} · {p.score}/{p.total_points} pts · <span className="font-mono">{p.code}</span></p>
-                {p.citation && <p className="text-xs italic text-muted-foreground mt-1 line-clamp-1">"{p.citation}"</p>}
+                <p className="font-medium text-sm">{p.recipient_name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Solved: <span className="text-foreground">{p.contest_title}</span> · <span className="font-mono">{p.code}</span>
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Requested {new Date(p.issued_at).toLocaleString()}
+                </p>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => decide(p.id, false, prompt("Reason for rejection (optional)") || undefined)} disabled={acting === p.id}>
+                <Button size="sm" variant="outline" onClick={() => decide(p.id, false)} disabled={acting === p.id}>
                   <X className="h-3.5 w-3.5 mr-1" /> Reject
                 </Button>
                 <Button size="sm" onClick={() => decide(p.id, true)} disabled={acting === p.id}>
@@ -137,73 +89,27 @@ export default function AdminCertificates() {
         </CardContent>
       </Card>
 
-      <div className="space-y-4">
-
-        {contests.map((c) => {
-          const r = rules[c.id];
-          const ended = new Date(c.end_time).getTime() < Date.now();
-          return (
-            <Card key={c.id}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    {c.title}
-                    <Badge variant="outline" className="text-xs">{c.status}</Badge>
-                    {issuedCounts[c.id] ? <Badge className="text-xs">{issuedCounts[c.id]} issued</Badge> : null}
-                  </CardTitle>
-                  <Link to={`/contest/${c.slug}`} className="text-xs text-primary inline-flex items-center gap-1">
-                    View <ExternalLink className="h-3 w-3" />
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-lg border p-3">
-                    <div><Label className="cursor-pointer">Certificates enabled</Label>
-                      <p className="text-xs text-muted-foreground">Allow generation for this contest</p></div>
-                    <Switch checked={r?.enabled ?? false} onCheckedChange={(v) => saveRule(c.id, { enabled: v })} />
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg border p-3">
-                    <div><Label className="cursor-pointer">Auto-generate when contest ends</Label>
-                      <p className="text-xs text-muted-foreground">Runs automatically every 5 minutes after end time</p></div>
-                    <Switch checked={r?.auto_generate ?? true} onCheckedChange={(v) => saveRule(c.id, { auto_generate: v })} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div><Label className="text-xs">Pass percentage (%)</Label>
-                      <Input type="number" min={0} max={100} value={r?.pass_percentage ?? 50} onChange={(e) => saveRule(c.id, { pass_percentage: +e.target.value })} />
-                      <p className="text-[10px] text-muted-foreground mt-1">Only users scoring more than this % get certificates</p></div>
-                    <div><Label className="text-xs">Top N (winners + top performers)</Label>
-                      <Input type="number" value={r?.top_n ?? 3} onChange={(e) => saveRule(c.id, { top_n: +e.target.value })} /></div>
-                  </div>
-
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-xs">AI citation guidance (optional)</Label>
-                    <Textarea
-                      rows={4}
-                      placeholder="e.g. Emphasize dynamic programming mastery and clean code."
-                      value={r?.citation_prompt ?? ""}
-                      onChange={(e) => saveRule(c.id, { citation_prompt: e.target.value })}
-                    />
-                  </div>
-                  <Button
-                    onClick={() => generate(c.id)}
-                    disabled={!r?.enabled || generating === c.id || !ended}
-                    className="w-full"
-                  >
-                    {generating === c.id
-                      ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Generating…</>
-                      : <><Sparkles className="h-4 w-4 mr-1.5" /> Auto-generate certificates</>}
-                  </Button>
-                  {!ended && <p className="text-xs text-muted-foreground">Available after the contest ends.</p>}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-        {contests.length === 0 && <p className="text-sm text-muted-foreground text-center py-12">No contests.</p>}
-      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Award className="h-4 w-4 text-primary" /> Recent Decisions
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {history.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">No history yet.</p>
+          ) : history.map((h) => (
+            <div key={h.id} className="rounded-lg border p-3 flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{h.recipient_name} · {h.contest_title}</p>
+                <p className="text-[10px] text-muted-foreground font-mono truncate">{h.code}</p>
+                {h.rejected_reason && <p className="text-xs text-destructive mt-0.5">Reason: {h.rejected_reason}</p>}
+              </div>
+              <Badge variant={h.status === "approved" ? "default" : "destructive"} className="text-xs capitalize">{h.status}</Badge>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </AdminShell>
   );
 }

@@ -76,8 +76,8 @@ export default function UserCertificates() {
           ) : rows.length === 0 ? (
             <Card><CardContent className="py-16 text-center text-muted-foreground">
               <Trophy className="h-10 w-10 mx-auto mb-3 opacity-50" />
-              <p>No certificates yet. Compete in a contest to earn one.</p>
-              <Button asChild className="mt-4" variant="outline"><Link to="/contest">Browse contests</Link></Button>
+              <p>No certificates yet. Solve a problem and apply for one.</p>
+              <Button asChild className="mt-4" variant="outline"><Link to="/problems">Browse problems</Link></Button>
             </CardContent></Card>
           ) : (
             <div className="grid gap-3">
