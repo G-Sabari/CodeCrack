@@ -111,7 +111,7 @@ export default function CertificateView() {
                   No approved certificate with code <span className="font-mono">{code}</span> was found.
                   It may be invalid, pending admin approval, or rejected.
                 </p>
-                <Link to="/contest"><Button variant="outline">Back to Contests</Button></Link>
+                <Link to="/problems"><Button variant="outline">Back to Problems</Button></Link>
               </CardContent>
             </Card>
           ) : cert.status !== "approved" ? (
