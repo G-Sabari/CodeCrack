@@ -14,7 +14,9 @@ import {
   ChevronUp,
   Sparkles,
   Zap,
-  Brain
+  Brain,
+  Award,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +29,9 @@ import { ExecutionPanel } from '@/components/problem/ExecutionPanel';
 import { AIMentor } from '@/components/problem/AIMentor';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { generateCode } from '@/lib/certificate';
 
 // Sample problem data - in production this would come from the database
 const SAMPLE_PROBLEM = {
@@ -133,6 +138,7 @@ const FREQUENCY_LABELS = {
 
 export default function ProblemDetail() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [language, setLanguage] = useState('python');
   const [code, setCode] = useState(SAMPLE_PROBLEM.starterCode.python);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -141,6 +147,48 @@ export default function ProblemDetail() {
   const [lastResult, setLastResult] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('description');
   const [isMentorExpanded, setIsMentorExpanded] = useState(true);
+  const [certStatus, setCertStatus] = useState<null | 'pending' | 'approved' | 'rejected'>(null);
+  const [requesting, setRequesting] = useState(false);
+
+  // Load existing certificate state for this problem
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from('certificates')
+        .select('status')
+        .eq('user_id', user.id)
+        .eq('contest_title', SAMPLE_PROBLEM.title)
+        .is('contest_id', null)
+        .order('issued_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) setCertStatus(data.status as any);
+    })();
+  }, [user]);
+
+  const applyForCertificate = async () => {
+    if (!user) { toast.error('Please log in'); return; }
+    setRequesting(true);
+    const { data: profile } = await supabase
+      .from('profiles').select('full_name, email').eq('user_id', user.id).maybeSingle();
+    const recipientName = (profile?.full_name?.trim()) || (profile?.email?.split('@')[0]) || 'Learner';
+    const { error } = await supabase.from('certificates').insert({
+      user_id: user.id,
+      contest_id: null,
+      code: generateCode(),
+      recipient_name: recipientName,
+      contest_title: SAMPLE_PROBLEM.title,
+      rank: 1, score: 1, total_points: 1,
+      percentage: 100, accuracy: 100,
+      certificate_type: 'completion',
+      status: 'pending',
+    } as any);
+    setRequesting(false);
+    if (error) { toast.error(error.message); return; }
+    setCertStatus('pending');
+    toast.success('Certificate request sent to admin for approval');
+  };
 
   // Load starter code when language changes
   const handleLanguageChange = useCallback((newLang: string) => {
