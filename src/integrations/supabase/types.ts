@@ -72,7 +72,7 @@ export type Database = {
           certificate_type: string
           citation: string | null
           code: string
-          contest_id: string
+          contest_id: string | null
           contest_title: string
           generated_by: string | null
           id: string
@@ -93,7 +93,7 @@ export type Database = {
           certificate_type?: string
           citation?: string | null
           code: string
-          contest_id: string
+          contest_id?: string | null
           contest_title: string
           generated_by?: string | null
           id?: string
@@ -114,7 +114,7 @@ export type Database = {
           certificate_type?: string
           citation?: string | null
           code?: string
-          contest_id?: string
+          contest_id?: string | null
           contest_title?: string
           generated_by?: string | null
           id?: string
