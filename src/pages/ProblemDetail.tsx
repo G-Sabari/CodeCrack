@@ -317,14 +317,37 @@ export default function ProblemDetail() {
             </span>
           </div>
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleFullscreen}
-          className="hover:bg-primary/10 transition-colors"
-        >
-          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-        </Button>
+        <div className="flex items-center gap-2">
+          {lastResult?.verdict === 'Accepted' && (
+            certStatus === 'approved' ? (
+              <Button asChild size="sm" variant="default" className="bg-emerald-600 hover:bg-emerald-600/90">
+                <Link to="/certificates"><Award className="h-4 w-4 mr-1.5" /> Certificate Ready</Link>
+              </Button>
+            ) : certStatus === 'pending' ? (
+              <Button size="sm" variant="outline" disabled>
+                <Clock className="h-4 w-4 mr-1.5" /> Awaiting Admin Approval
+              </Button>
+            ) : certStatus === 'rejected' ? (
+              <Button size="sm" variant="outline" onClick={applyForCertificate} disabled={requesting}>
+                {requesting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Award className="h-4 w-4 mr-1.5" />}
+                Re-apply for Certificate
+              </Button>
+            ) : (
+              <Button size="sm" onClick={applyForCertificate} disabled={requesting}>
+                {requesting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Award className="h-4 w-4 mr-1.5" />}
+                Apply for Certificate
+              </Button>
+            )
+          )}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleFullscreen}
+            className="hover:bg-primary/10 transition-colors"
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </Button>
+        </div>
       </header>
 
       {/* Main Content - Horizontal Split */}
