@@ -27,6 +27,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProblems from "./pages/admin/AdminProblems";
 import AdminSubmissions from "./pages/admin/AdminSubmissions";
 import AdminCertificates from "./pages/admin/AdminCertificates";
+import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/behavioral" element={<ProtectedRoute><Behavioral /></ProtectedRoute>} />
               <Route path="/group-discussion" element={<ProtectedRoute><GroupDiscussion /></ProtectedRoute>} />
               <Route path="/pyq-database" element={<ProtectedRoute><PYQDatabase /></ProtectedRoute>} />
+              <Route path="/resume-analyzer" element={<ProtectedRoute><ResumeAnalyzer /></ProtectedRoute>} />
               <Route path="/contest" element={<Navigate to="/problems" replace />} />
               <Route path="/contest/*" element={<Navigate to="/problems" replace />} />
               <Route path="/leaderboard" element={<Navigate to="/problems" replace />} />

@@ -19,6 +19,7 @@ const navLinks = [
   { name: "PYQ", href: "/pyq-database" },
   { name: "Aptitude", href: "/aptitude" },
   { name: "HR Interview", href: "/behavioral" },
+  { name: "Resume", href: "/resume-analyzer" },
   { name: "Certificates", href: "/certificates" },
   { name: "Dashboard", href: "/dashboard" },
 ];
