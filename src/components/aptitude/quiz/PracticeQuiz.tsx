@@ -20,6 +20,8 @@ import {
 import { Play, Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PremiumAptitudeQuestion } from "@/data/premiumAptitudeQuestions";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PracticeQuizProps {
   questions: PremiumAptitudeQuestion[];
@@ -36,6 +38,7 @@ export function PracticeQuiz({
   topicName,
   onBack,
 }: PracticeQuizProps) {
+  const { user } = useAuth();
   const [quizState, setQuizState] = useState<QuizState>("setup");
   const [filteredQuestions, setFilteredQuestions] = useState<PremiumAptitudeQuestion[]>([]);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
@@ -46,9 +49,44 @@ export function PracticeQuiz({
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timeTaken, setTimeTaken] = useState(0);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [savedAttempt, setSavedAttempt] = useState(false);
 
   // Quiz duration: 30 minutes = 1800 seconds
   const QUIZ_DURATION = 30 * 60;
+
+  const persistAttempt = useCallback(async () => {
+    if (!user || savedAttempt) return;
+    setSavedAttempt(true);
+    const total = filteredQuestions.length;
+    const correct = userAnswers.reduce<number>(
+      (a, ans, i) => a + (ans !== null && ans === filteredQuestions[i]?.correctAnswer ? 1 : 0),
+      0,
+    );
+    const answered = userAnswers.filter((a) => a !== null).length;
+    const wrong = answered - correct;
+    const skipped = total - answered;
+    const score = correct * 4 - wrong;
+    const accuracy = answered ? Number(((correct / answered) * 100).toFixed(2)) : 0;
+    try {
+      await supabase.from("aptitude_attempts").insert({
+        user_id: user.id,
+        category: categoryName,
+        topic: topicName ?? null,
+        total_questions: total,
+        correct_count: correct,
+        wrong_count: wrong,
+        skipped_count: skipped,
+        score,
+        accuracy,
+        time_taken_seconds: timeTaken,
+        xp_earned: correct * 5,
+        answers: userAnswers,
+      });
+    } catch (e) {
+      console.error("Failed to save quiz attempt", e);
+    }
+  }, [user, savedAttempt, filteredQuestions, userAnswers, categoryName, topicName, timeTaken]);
+
 
   // Filter questions based on selected companies
   useEffect(() => {
