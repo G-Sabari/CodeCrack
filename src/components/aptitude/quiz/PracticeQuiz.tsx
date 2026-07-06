@@ -118,6 +118,7 @@ export function PracticeQuiz({
     setCurrentQuestionIndex(0);
     setTimeTaken(0);
     setIsTimerRunning(true);
+    setSavedAttempt(false);
     setQuizState("quiz");
   };
 
@@ -153,8 +154,9 @@ export function PracticeQuiz({
 
   const handleTimeUp = useCallback(() => {
     setIsTimerRunning(false);
+    persistAttempt();
     setQuizState("result");
-  }, []);
+  }, [persistAttempt]);
 
   const handleSubmit = () => {
     setShowSubmitDialog(true);
@@ -163,6 +165,7 @@ export function PracticeQuiz({
   const confirmSubmit = () => {
     setIsTimerRunning(false);
     setShowSubmitDialog(false);
+    persistAttempt();
     setQuizState("result");
   };
 
