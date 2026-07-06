@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
@@ -12,11 +13,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Target,
   TrendingUp,
-  Calendar,
   CheckCircle2,
   Clock,
   Flame,
@@ -24,135 +23,32 @@ import {
   ArrowRight,
   BookOpen,
   Building2,
-  AlertTriangle,
   Code,
   Calculator,
-  Users,
-  MessageSquare,
-  Brain,
-  Zap,
-  BarChart3,
   FileText,
+  Award,
+  Zap,
+  Sparkles,
 } from "lucide-react";
 import { GlobalSearch } from "@/components/dashboard/GlobalSearch";
-import { TopicChecklist } from "@/components/dashboard/TopicChecklist";
-import { PracticeCounter } from "@/components/dashboard/PracticeCounter";
-
-// Overall user stats
-const userStats = {
-  totalSolved: 127,
-  totalProblems: 870,
-  streak: 12,
-  codingSolved: 47,
-  codingTotal: 500,
-  aptitudeSolved: 45,
-  aptitudeTotal: 270,
-  behavioralPrepared: 25,
-  behavioralTotal: 50,
-  gdPrepared: 10,
-  gdTotal: 50,
-};
-
-// Section-wise progress
-const sectionProgress = [
-  {
-    name: "Coding",
-    icon: Code,
-    solved: 47,
-    total: 500,
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-    path: "/problems",
-    breakdown: {
-      easy: { solved: 25, total: 150 },
-      medium: { solved: 18, total: 250 },
-      hard: { solved: 4, total: 100 },
-    },
-  },
-  {
-    name: "Aptitude",
-    icon: Calculator,
-    solved: 45,
-    total: 270,
-    color: "text-[hsl(var(--warning))]",
-    bgColor: "bg-[hsl(var(--warning))]/10",
-    path: "/aptitude",
-    breakdown: {
-      quantitative: { solved: 20, total: 150 },
-      logical: { solved: 15, total: 80 },
-      verbal: { solved: 10, total: 40 },
-    },
-  },
-  {
-    name: "HR Interview",
-    icon: Users,
-    solved: 25,
-    total: 50,
-    color: "text-[hsl(var(--success))]",
-    bgColor: "bg-[hsl(var(--success))]/10",
-    path: "/behavioral",
-    breakdown: {
-      prepared: 25,
-      practiced: 15,
-      mastered: 8,
-    },
-  },
-  {
-    name: "Group Discussion",
-    icon: MessageSquare,
-    solved: 10,
-    total: 50,
-    color: "text-purple-500",
-    bgColor: "bg-purple-500/10",
-    path: "/group-discussion",
-    breakdown: {
-      currentAffairs: { solved: 3, total: 15 },
-      technology: { solved: 3, total: 15 },
-      social: { solved: 2, total: 10 },
-      abstract: { solved: 2, total: 10 },
-    },
-  },
-];
-
-const weakTopics = [
-  { name: "Dynamic Programming", type: "Coding", solved: 2, total: 45, percentage: 4 },
-  { name: "Graphs", type: "Coding", solved: 3, total: 40, percentage: 8 },
-  { name: "Probability", type: "Aptitude", solved: 2, total: 15, percentage: 13 },
-  { name: "Time & Work", type: "Aptitude", solved: 3, total: 18, percentage: 17 },
-];
-
-const recentActivity = [
-  { id: 1, title: "Two Sum", type: "Coding", difficulty: "Easy", status: "solved", date: "Today" },
-  { id: 2, title: "Percentages Quiz", type: "Aptitude", difficulty: "Medium", status: "solved", date: "Today" },
-  { id: 3, title: "Tell me about yourself", type: "Behavioral", difficulty: "Easy", status: "practiced", date: "Yesterday" },
-  { id: 4, title: "AI Replacing Jobs", type: "GD", difficulty: "Medium", status: "prepared", date: "Yesterday" },
-  { id: 5, title: "Binary Tree Level Order", type: "Coding", difficulty: "Medium", status: "attempted", date: "2 days ago" },
-];
-
-const companyReadiness = [
-  { name: "TCS", readiness: 78, category: "Service" },
-  { name: "Infosys", readiness: 72, category: "Service" },
-  { name: "Wipro", readiness: 80, category: "Service" },
-  { name: "Zoho", readiness: 55, category: "Service" },
-  { name: "Amazon", readiness: 35, category: "Product" },
-  { name: "Microsoft", readiness: 40, category: "Product" },
-];
-
-const dailyGoal = {
-  coding: { target: 2, completed: 1 },
-  aptitude: { target: 5, completed: 3 },
-  behavioral: { target: 1, completed: 1 },
-};
-
-const weeklyInsights = [
-  { label: "Most Active Day", value: "Tuesday", icon: Calendar },
-  { label: "Avg. Time/Problem", value: "12 mins", icon: Clock },
-  { label: "Accuracy Rate", value: "76%", icon: Target },
-  { label: "Problems This Week", value: "23", icon: TrendingUp },
-];
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useAuth } from "@/hooks/useAuth";
+import { formatDistanceToNow } from "date-fns";
 
 export default function Dashboard() {
-  const overallProgress = Math.round((userStats.totalSolved / userStats.totalProblems) * 100);
+  const { stats, loading } = useDashboardStats();
+  const { user } = useAuth();
+
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 18) return "Good afternoon";
+    return "Good evening";
+  })();
+
+  const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "there";
+
+  const dailyPct = Math.min(100, Math.round((stats.dailyGoal.completed / stats.dailyGoal.target) * 100));
 
   return (
     <div className="min-h-screen bg-background">
@@ -160,442 +56,313 @@ export default function Dashboard() {
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          {/* Back Button */}
           <div className="mb-4">
             <BackButton />
           </div>
 
-          {/* Header with Search */}
+          {/* Header */}
           <div className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+                <h1 className="text-3xl font-bold mb-2">{greeting}, {name} 👋</h1>
                 <p className="text-muted-foreground">
-                  Your complete interview preparation progress at a glance
+                  Your live interview-prep dashboard.
                 </p>
               </div>
               <GlobalSearch />
             </div>
           </div>
 
-          {/* Quick Access Links */}
+          {/* Quick Access */}
           <div className="flex flex-wrap gap-2 mb-8">
             <Button variant="outline" size="sm" asChild>
-              <Link to="/pyq-database">
-                <FileText className="h-4 w-4 mr-2" />
-                PYQ Database
-              </Link>
+              <Link to="/problems"><Code className="h-4 w-4 mr-2" />Practice Problems</Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/companies">
-                <Building2 className="h-4 w-4 mr-2" />
-                Company Database
-              </Link>
+              <Link to="/aptitude"><Calculator className="h-4 w-4 mr-2" />Aptitude</Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/learning-path">
-                <BookOpen className="h-4 w-4 mr-2" />
-                Roadmaps
-              </Link>
+              <Link to="/pyq-database"><FileText className="h-4 w-4 mr-2" />PYQ Database</Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/problems">
-                <Code className="h-4 w-4 mr-2" />
-                Practice Problems
-              </Link>
+              <Link to="/companies"><Building2 className="h-4 w-4 mr-2" />Companies</Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/learning-path"><BookOpen className="h-4 w-4 mr-2" />Roadmaps</Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/certificates"><Award className="h-4 w-4 mr-2" />Certificates</Link>
             </Button>
           </div>
 
-
-          {/* Top Stats */}
+          {/* Top stat grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">Total Progress</span>
-                </div>
-                <div className="text-3xl font-bold">{userStats.totalSolved}</div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  of {userStats.totalProblems} items completed
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-10 w-10 rounded-lg bg-[hsl(var(--warning))]/10 flex items-center justify-center">
-                    <Flame className="h-5 w-5 text-[hsl(var(--warning))]" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">Streak</span>
-                </div>
-                <div className="text-3xl font-bold">{userStats.streak}</div>
-                <div className="text-sm text-muted-foreground mt-1">days in a row</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-10 w-10 rounded-lg bg-[hsl(var(--success))]/10 flex items-center justify-center">
-                    <Target className="h-5 w-5 text-[hsl(var(--success))]" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">Daily Goal</span>
-                </div>
-                <div className="text-3xl font-bold">
-                  {dailyGoal.coding.completed + dailyGoal.aptitude.completed + dailyGoal.behavioral.completed}/
-                  {dailyGoal.coding.target + dailyGoal.aptitude.target + dailyGoal.behavioral.target}
-                </div>
-                <div className="text-sm text-muted-foreground mt-1">tasks today</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Trophy className="h-5 w-5 text-primary" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">Readiness</span>
-                </div>
-                <div className="text-3xl font-bold">{overallProgress}%</div>
-                <div className="text-sm text-muted-foreground mt-1">placement ready</div>
-              </CardContent>
-            </Card>
+            <StatCard
+              loading={loading}
+              icon={CheckCircle2}
+              iconClass="text-primary bg-primary/10"
+              label="Problems Solved"
+              value={stats.problemsSolved}
+              hint={`${stats.problemsAttempted} attempted`}
+            />
+            <StatCard
+              loading={loading}
+              icon={Calculator}
+              iconClass="text-[hsl(var(--warning))] bg-[hsl(var(--warning))]/10"
+              label="Quizzes Taken"
+              value={stats.quizzesTaken}
+              hint={`${stats.quizAccuracy}% accuracy`}
+            />
+            <StatCard
+              loading={loading}
+              icon={Award}
+              iconClass="text-emerald-500 bg-emerald-500/10"
+              label="Certificates"
+              value={stats.certificatesEarned}
+              hint={stats.certificatesPending ? `${stats.certificatesPending} pending` : "approved"}
+            />
+            <StatCard
+              loading={loading}
+              icon={FileText}
+              iconClass="text-purple-500 bg-purple-500/10"
+              label="Resume Analyses"
+              value={stats.resumeAnalyses}
+              hint="ATS reports run"
+            />
           </div>
 
-          {/* Weekly Insights */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {weeklyInsights.map((insight) => (
-              <Card key={insight.label}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center">
-                    <insight.icon className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold">{insight.value}</p>
-                    <p className="text-xs text-muted-foreground">{insight.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <StatCard
+              loading={loading}
+              icon={Flame}
+              iconClass="text-orange-500 bg-orange-500/10"
+              label="Day Streak"
+              value={stats.streak}
+              hint="days active"
+            />
+            <StatCard
+              loading={loading}
+              icon={Zap}
+              iconClass="text-yellow-500 bg-yellow-500/10"
+              label="XP"
+              value={stats.xp}
+              hint="earned so far"
+            />
+            <StatCard
+              loading={loading}
+              icon={TrendingUp}
+              iconClass="text-primary bg-primary/10"
+              label="This Week"
+              value={stats.weeklyActivity}
+              hint="activities"
+            />
+            <StatCard
+              loading={loading}
+              icon={Trophy}
+              iconClass="text-[hsl(var(--warning))] bg-[hsl(var(--warning))]/10"
+              label="This Month"
+              value={stats.monthlyActivity}
+              hint="activities"
+            />
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Column - Main Progress */}
+            {/* Left column */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Section-wise Progress */}
+              {/* Daily Goal */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                    Section-wise Progress
+                    <Target className="h-5 w-5 text-primary" />
+                    Daily Goal
                   </CardTitle>
                   <CardDescription>
-                    Your preparation progress across all interview areas
+                    Complete {stats.dailyGoal.target} activities today to keep your streak alive.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {sectionProgress.map((section) => (
-                      <div key={section.name} className="p-4 rounded-xl border border-border bg-card">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className={`h-10 w-10 rounded-lg ${section.bgColor} flex items-center justify-center`}>
-                              <section.icon className={`h-5 w-5 ${section.color}`} />
-                            </div>
-                            <div>
-                              <p className="font-semibold">{section.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {section.solved}/{section.total}
-                              </p>
+                  <div className="flex items-baseline justify-between mb-2">
+                    <span className="text-2xl font-bold">
+                      {stats.dailyGoal.completed}/{stats.dailyGoal.target}
+                    </span>
+                    <span className="text-sm text-muted-foreground">{dailyPct}%</span>
+                  </div>
+                  <Progress value={dailyPct} className="h-2" />
+                </CardContent>
+              </Card>
+
+              {/* Recent activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>Your live submissions and quiz history.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="space-y-2">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <Skeleton key={i} className="h-14 w-full" />
+                      ))}
+                    </div>
+                  ) : stats.recent.length === 0 ? (
+                    <EmptyState
+                      title="No activity yet"
+                      body="Solve a problem or take a quiz — it'll show up here in real time."
+                      cta={{ to: "/problems", label: "Start a problem" }}
+                    />
+                  ) : (
+                    <div className="space-y-2">
+                      {stats.recent.map((item) => (
+                        <div
+                          key={`${item.kind}-${item.id}`}
+                          className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {item.status === "success" ? (
+                              <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                            ) : item.status === "pending" ? (
+                              <Clock className="h-5 w-5 text-[hsl(var(--warning))] flex-shrink-0" />
+                            ) : (
+                              <Sparkles className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{item.title}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <Badge variant="secondary" className="text-xs capitalize">{item.kind}</Badge>
+                                <span className="text-xs text-muted-foreground truncate">{item.meta}</span>
+                              </div>
                             </div>
                           </div>
-                          <span className={`text-lg font-bold ${section.color}`}>
-                            {Math.round((section.solved / section.total) * 100)}%
+                          <span className="text-xs text-muted-foreground flex-shrink-0 ml-3">
+                            {formatDistanceToNow(new Date(item.at), { addSuffix: true })}
                           </span>
                         </div>
-                        <Progress
-                          value={(section.solved / section.total) * 100}
-                          className="h-2 mb-3"
-                        />
-                        <Button variant="ghost" size="sm" className="w-full" asChild>
-                          <Link to={section.path}>
-                            Continue Practice
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </Link>
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Recent Activity */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Recent Activity</CardTitle>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to="/problems">View All</Link>
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {recentActivity.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          {item.status === "solved" || item.status === "practiced" || item.status === "prepared" ? (
-                            <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))]" />
-                          ) : (
-                            <Clock className="h-5 w-5 text-[hsl(var(--warning))]" />
-                          )}
-                          <div>
-                            <span className="font-medium">{item.title}</span>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="secondary" className="text-xs">
-                                {item.type}
-                              </Badge>
-                              <Badge
-                                variant="outline"
-                                className={
-                                  item.difficulty === "Easy"
-                                    ? "text-[hsl(var(--success))] border-[hsl(var(--success))]/30"
-                                    : item.difficulty === "Medium"
-                                    ? "text-[hsl(var(--warning))] border-[hsl(var(--warning))]/30"
-                                    : "text-destructive border-destructive/30"
-                                }
-                              >
-                                {item.difficulty}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-sm text-muted-foreground">{item.date}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Company Readiness */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Building2 className="h-5 w-5 text-primary" />
-                        Company Readiness Score
-                      </CardTitle>
-                      <CardDescription>
-                        Your preparation level for different companies
-                      </CardDescription>
+                      ))}
                     </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to="/companies">View All</Link>
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="service">
-                    <TabsList className="mb-4">
-                      <TabsTrigger value="service">Service Companies</TabsTrigger>
-                      <TabsTrigger value="product">Product Companies</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="service">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        {companyReadiness
-                          .filter((c) => c.category === "Service")
-                          .map((company) => (
-                            <div key={company.name} className="p-4 rounded-lg border border-border">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium">{company.name}</span>
-                                <span className="text-primary font-bold">{company.readiness}%</span>
-                              </div>
-                              <Progress value={company.readiness} className="h-2" />
-                            </div>
-                          ))}
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="product">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        {companyReadiness
-                          .filter((c) => c.category === "Product")
-                          .map((company) => (
-                            <div key={company.name} className="p-4 rounded-lg border border-border">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium">{company.name}</span>
-                                <span className="text-primary font-bold">{company.readiness}%</span>
-                              </div>
-                              <Progress value={company.readiness} className="h-2" />
-                            </div>
-                          ))}
-                      </div>
-                    </TabsContent>
-                  </Tabs>
+                  )}
                 </CardContent>
               </Card>
             </div>
 
-            {/* Right Column */}
+            {/* Right column */}
             <div className="space-y-8">
-              {/* Daily Goals */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-[hsl(var(--warning))]" />
-                    Today's Goals
+                    <Trophy className="h-5 w-5 text-primary" />
+                    Placement Readiness
                   </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Code className="h-4 w-4 text-primary" />
-                        <span className="text-sm">Coding Problems</span>
-                      </div>
-                      <span className="text-sm font-medium">
-                        {dailyGoal.coding.completed}/{dailyGoal.coding.target}
-                      </span>
-                    </div>
-                    <Progress
-                      value={(dailyGoal.coding.completed / dailyGoal.coding.target) * 100}
-                      className="h-2"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Calculator className="h-4 w-4 text-[hsl(var(--warning))]" />
-                        <span className="text-sm">Aptitude Questions</span>
-                      </div>
-                      <span className="text-sm font-medium">
-                        {dailyGoal.aptitude.completed}/{dailyGoal.aptitude.target}
-                      </span>
-                    </div>
-                    <Progress
-                      value={(dailyGoal.aptitude.completed / dailyGoal.aptitude.target) * 100}
-                      className="h-2"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-[hsl(var(--success))]" />
-                        <span className="text-sm">HR Practice</span>
-                      </div>
-                      <span className="text-sm font-medium">
-                        {dailyGoal.behavioral.completed}/{dailyGoal.behavioral.target}
-                      </span>
-                    </div>
-                    <Progress
-                      value={(dailyGoal.behavioral.completed / dailyGoal.behavioral.target) * 100}
-                      className="h-2"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Weak Topics */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-[hsl(var(--warning))]" />
-                    <CardTitle>Weak Topics</CardTitle>
-                  </div>
-                  <CardDescription>Focus on these areas to improve</CardDescription>
+                  <CardDescription>
+                    Score based on problems solved, quiz accuracy, and certificates.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {weakTopics.map((topic) => (
-                      <div key={topic.name}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <span className="text-sm font-medium">{topic.name}</span>
-                            <Badge variant="secondary" className="ml-2 text-xs">
-                              {topic.type}
-                            </Badge>
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {topic.solved}/{topic.total}
-                          </span>
-                        </div>
-                        <Progress value={topic.percentage} className="h-2" />
-                      </div>
-                    ))}
-                  </div>
-                  <Button variant="outline" size="sm" className="w-full mt-4" asChild>
-                    <Link to="/problems?difficulty=medium">
-                      <Brain className="h-4 w-4 mr-2" />
-                      Practice Weak Areas
-                    </Link>
-                  </Button>
+                  {(() => {
+                    const readiness = Math.min(
+                      100,
+                      Math.round(
+                        stats.problemsSolved * 1.5 +
+                          stats.quizAccuracy * 0.3 +
+                          stats.certificatesEarned * 5,
+                      ),
+                    );
+                    return (
+                      <>
+                        <div className="text-4xl font-bold mb-2">{readiness}%</div>
+                        <Progress value={readiness} className="h-2 mb-3" />
+                        <p className="text-sm text-muted-foreground">
+                          {readiness < 30
+                            ? "Just getting started — keep going!"
+                            : readiness < 60
+                            ? "Making solid progress."
+                            : readiness < 85
+                            ? "You're interview-ready for most companies."
+                            : "You're placement-ready. 🎯"}
+                        </p>
+                      </>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 
-              {/* Quick Actions */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
+                  <CardTitle>Continue</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start" asChild>
-                    <Link to="/problems?random=true">
-                      <Target className="h-4 w-4 mr-2" />
-                      Random Coding Problem
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" asChild>
-                    <Link to="/aptitude">
-                      <Calculator className="h-4 w-4 mr-2" />
-                      Quick Aptitude Quiz
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" asChild>
-                    <Link to="/behavioral">
-                      <Users className="h-4 w-4 mr-2" />
-                      Practice HR Questions
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" asChild>
-                    <Link to="/group-discussion">
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Prepare for GD
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" asChild>
-                    <Link to="/learning-path">
-                      <BookOpen className="h-4 w-4 mr-2" />
-                      Continue Learning Path
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" asChild>
-                    <Link to="/pyq-database">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Browse PYQ Database
-                    </Link>
-                  </Button>
+                  <ContinueLink to="/problems" label="Solve next problem" icon={Code} />
+                  <ContinueLink to="/aptitude" label="Take an aptitude quiz" icon={Calculator} />
+                  <ContinueLink to="/resume-analyzer" label="Analyze your resume" icon={FileText} />
+                  <ContinueLink to="/certificates" label="View my certificates" icon={Award} />
                 </CardContent>
               </Card>
-
-              {/* Practice Counter Widget */}
-              <PracticeCounter />
-
-              {/* Topic Checklist Widget */}
-              <TopicChecklist />
             </div>
           </div>
         </div>
       </main>
 
       <Footer />
+    </div>
+  );
+}
+
+function StatCard({
+  loading, icon: Icon, iconClass, label, value, hint,
+}: {
+  loading: boolean;
+  icon: React.ComponentType<{ className?: string }>;
+  iconClass: string;
+  label: string;
+  value: number;
+  hint: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center gap-3 mb-3">
+          <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${iconClass}`}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <span className="text-sm text-muted-foreground">{label}</span>
+        </div>
+        {loading ? (
+          <Skeleton className="h-9 w-16" />
+        ) : (
+          <div className="text-3xl font-bold">{value}</div>
+        )}
+        <div className="text-sm text-muted-foreground mt-1">{hint}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ContinueLink({
+  to, label, icon: Icon,
+}: { to: string; label: string; icon: React.ComponentType<{ className?: string }> }) {
+  return (
+    <Link
+      to={to}
+      className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-secondary/50 hover:border-primary/40 transition-colors group"
+    >
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+    </Link>
+  );
+}
+
+function EmptyState({ title, body, cta }: { title: string; body: string; cta?: { to: string; label: string } }) {
+  return (
+    <div className="py-8 text-center">
+      <p className="font-medium mb-1">{title}</p>
+      <p className="text-sm text-muted-foreground mb-4">{body}</p>
+      {cta && (
+        <Button asChild size="sm">
+          <Link to={cta.to}>{cta.label}</Link>
+        </Button>
+      )}
     </div>
   );
 }

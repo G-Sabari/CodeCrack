@@ -241,6 +241,25 @@ export default function ProblemDetail() {
         } else {
           toast.error(`${result.verdict}`);
         }
+        // Persist submission for real dashboard/history
+        if (user) {
+          try {
+            await supabase.from('practice_submissions').insert({
+              user_id: user.id,
+              problem_slug: id || SAMPLE_PROBLEM.id,
+              problem_title: SAMPLE_PROBLEM.title,
+              difficulty: SAMPLE_PROBLEM.difficulty,
+              language,
+              code,
+              verdict: result.verdict || 'Unknown',
+              passed_count: result.passedCount ?? result.passed_count ?? 0,
+              total_count: result.totalCount ?? result.total_count ?? (SAMPLE_PROBLEM.testCases?.length ?? 0),
+              runtime_ms: result.runtimeMs ?? result.runtime_ms ?? null,
+            });
+          } catch (e) {
+            console.error('Failed to persist submission', e);
+          }
+        }
       }
 
       return result;
