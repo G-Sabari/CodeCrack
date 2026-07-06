@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 
 const navLinks = [
@@ -73,6 +74,7 @@ export function Navbar() {
         {/* Auth Buttons & Theme Toggle */}
         <div className="hidden items-center gap-2 md:flex">
           <ThemeToggle />
+          {user && <NotificationBell />}
           {!loading && (
             <>
               {user ? (
