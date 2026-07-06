@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      aptitude_attempts: {
+        Row: {
+          accuracy: number
+          answers: Json | null
+          category: string
+          correct_count: number
+          created_at: string
+          id: string
+          score: number
+          skipped_count: number
+          time_taken_seconds: number
+          topic: string | null
+          total_questions: number
+          user_id: string
+          wrong_count: number
+          xp_earned: number
+        }
+        Insert: {
+          accuracy: number
+          answers?: Json | null
+          category: string
+          correct_count: number
+          created_at?: string
+          id?: string
+          score: number
+          skipped_count?: number
+          time_taken_seconds?: number
+          topic?: string | null
+          total_questions: number
+          user_id: string
+          wrong_count: number
+          xp_earned?: number
+        }
+        Update: {
+          accuracy?: number
+          answers?: Json | null
+          category?: string
+          correct_count?: number
+          created_at?: string
+          id?: string
+          score?: number
+          skipped_count?: number
+          time_taken_seconds?: number
+          topic?: string | null
+          total_questions?: number
+          user_id?: string
+          wrong_count?: number
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       certificate_rules: {
         Row: {
           auto_generate: boolean
@@ -380,6 +431,84 @@ export type Database = {
           updated_at?: string
           week_number?: number | null
           year?: number | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          data: Json | null
+          id: string
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      practice_submissions: {
+        Row: {
+          code: string
+          difficulty: string | null
+          id: string
+          language: string
+          passed_count: number
+          problem_slug: string
+          problem_title: string
+          runtime_ms: number | null
+          submitted_at: string
+          total_count: number
+          user_id: string
+          verdict: string
+        }
+        Insert: {
+          code: string
+          difficulty?: string | null
+          id?: string
+          language: string
+          passed_count?: number
+          problem_slug: string
+          problem_title: string
+          runtime_ms?: number | null
+          submitted_at?: string
+          total_count?: number
+          user_id: string
+          verdict: string
+        }
+        Update: {
+          code?: string
+          difficulty?: string | null
+          id?: string
+          language?: string
+          passed_count?: number
+          problem_slug?: string
+          problem_title?: string
+          runtime_ms?: number | null
+          submitted_at?: string
+          total_count?: number
+          user_id?: string
+          verdict?: string
         }
         Relationships: []
       }
