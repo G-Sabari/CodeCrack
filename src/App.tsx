@@ -27,6 +27,9 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProblems from "./pages/admin/AdminProblems";
 import AdminSubmissions from "./pages/admin/AdminSubmissions";
 import AdminCertificates from "./pages/admin/AdminCertificates";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminCompanies from "./pages/admin/AdminCompanies";
+import AdminPYQ from "./pages/admin/AdminPYQ";
 import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 
 const queryClient = new QueryClient();
@@ -68,6 +71,9 @@ const App = () => (
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               <Route path="/admin/contests" element={<Navigate to="/admin/problems" replace />} />
               <Route path="/admin/problems" element={<AdminRoute><AdminProblems /></AdminRoute>} />
+              <Route path="/admin/companies" element={<AdminRoute><AdminCompanies /></AdminRoute>} />
+              <Route path="/admin/pyq" element={<AdminRoute><AdminPYQ /></AdminRoute>} />
+              <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
               <Route path="/admin/submissions" element={<AdminRoute><AdminSubmissions /></AdminRoute>} />
               <Route path="/admin/certificates" element={<AdminRoute><AdminCertificates /></AdminRoute>} />
 

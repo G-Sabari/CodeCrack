@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
-import { LayoutDashboard, Code2, FileText, Award, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Code2, FileText, Award, ArrowLeft, Users, Building2, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
 
 const items = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
+  { to: "/admin/users", label: "Users", icon: Users },
   { to: "/admin/problems", label: "Problems", icon: Code2 },
+  { to: "/admin/companies", label: "Companies", icon: Building2 },
+  { to: "/admin/pyq", label: "PYQs", icon: HelpCircle },
   { to: "/admin/submissions", label: "Submissions", icon: FileText },
   { to: "/admin/certificates", label: "Certificates", icon: Award },
 ];
