@@ -66,6 +66,7 @@ const App = () => (
               <Route path="/contest/*" element={<Navigate to="/problems" replace />} />
               <Route path="/leaderboard" element={<Navigate to="/problems" replace />} />
               <Route path="/certificate/:code" element={<CertificateView />} />
+              <Route path="/certificates/verify/:code" element={<CertificateView />} />
               <Route path="/certificates" element={<ProtectedRoute><UserCertificates /></ProtectedRoute>} />
 
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
