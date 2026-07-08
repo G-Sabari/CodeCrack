@@ -118,6 +118,7 @@ export type Database = {
       certificates: {
         Row: {
           accuracy: number
+          admin_comment: string | null
           approved_at: string | null
           approved_by: string | null
           certificate_type: string
@@ -125,6 +126,8 @@ export type Database = {
           code: string
           contest_id: string | null
           contest_title: string
+          download_count: number
+          eligibility: Json | null
           generated_by: string | null
           id: string
           issued_at: string
@@ -132,13 +135,17 @@ export type Database = {
           rank: number
           recipient_name: string
           rejected_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           score: number
+          shared_count: number
           status: string
           total_points: number
           user_id: string
         }
         Insert: {
           accuracy?: number
+          admin_comment?: string | null
           approved_at?: string | null
           approved_by?: string | null
           certificate_type?: string
@@ -146,6 +153,8 @@ export type Database = {
           code: string
           contest_id?: string | null
           contest_title: string
+          download_count?: number
+          eligibility?: Json | null
           generated_by?: string | null
           id?: string
           issued_at?: string
@@ -153,13 +162,17 @@ export type Database = {
           rank: number
           recipient_name: string
           rejected_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           score: number
+          shared_count?: number
           status?: string
           total_points: number
           user_id: string
         }
         Update: {
           accuracy?: number
+          admin_comment?: string | null
           approved_at?: string | null
           approved_by?: string | null
           certificate_type?: string
@@ -167,6 +180,8 @@ export type Database = {
           code?: string
           contest_id?: string | null
           contest_title?: string
+          download_count?: number
+          eligibility?: Json | null
           generated_by?: string | null
           id?: string
           issued_at?: string
@@ -174,7 +189,10 @@ export type Database = {
           rank?: number
           recipient_name?: string
           rejected_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           score?: number
+          shared_count?: number
           status?: string
           total_points?: number
           user_id?: string
@@ -1051,6 +1069,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_certificate_download: {
+        Args: { _code: string }
+        Returns: undefined
+      }
+      increment_certificate_share: {
+        Args: { _code: string }
+        Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
     }
