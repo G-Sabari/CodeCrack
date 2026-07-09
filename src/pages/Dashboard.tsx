@@ -334,8 +334,15 @@ export default function Dashboard() {
               </Card>
             </div>
           </div>
+
+          {/* Achievements + Activity timeline */}
+          <div className="grid lg:grid-cols-2 gap-6 mt-8">
+            <AchievementBadgeGrid badges={placement.badges} />
+            <RecentActivityTimeline items={placement.recent} />
+          </div>
         </div>
       </main>
+
 
       <Footer />
     </div>
