@@ -34,9 +34,20 @@ import { GlobalSearch } from "@/components/dashboard/GlobalSearch";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
+import { usePlacementData } from "@/hooks/usePlacementData";
+import { PlacementReadinessCard } from "@/components/dashboard/PlacementReadinessCard";
+import { CareerProgressGrid } from "@/components/dashboard/CareerProgressGrid";
+import { DailyGoalsCard } from "@/components/dashboard/DailyGoalsCard";
+import { ContinueLearningCard } from "@/components/dashboard/ContinueLearningCard";
+import { RecommendationCard } from "@/components/dashboard/RecommendationCard";
+import { AchievementBadgeGrid } from "@/components/dashboard/AchievementBadgeGrid";
+import { SmartInsightsCard } from "@/components/dashboard/SmartInsightsCard";
+import { RecentActivityTimeline } from "@/components/dashboard/RecentActivityTimeline";
+
 
 export default function Dashboard() {
   const { stats, loading } = useDashboardStats();
+  const placement = usePlacementData();
   const { user } = useAuth();
 
   const greeting = (() => {
@@ -94,6 +105,31 @@ export default function Dashboard() {
               <Link to="/certificates"><Award className="h-4 w-4 mr-2" />Certificates</Link>
             </Button>
           </div>
+
+          {/* Placement Readiness hero */}
+          <div className="mb-6">
+            <PlacementReadinessCard data={placement} />
+          </div>
+
+          {/* Recommendation */}
+          <div className="mb-6">
+            <RecommendationCard rec={placement.recommendation} />
+          </div>
+
+          {/* Career progress + daily goals */}
+          <div className="grid lg:grid-cols-3 gap-6 mb-6">
+            <div className="lg:col-span-2">
+              <CareerProgressGrid categories={placement.categories} overall={placement.overallCareer} />
+            </div>
+            <DailyGoalsCard goals={placement.dailyGoals} />
+          </div>
+
+          {/* Continue + Insights */}
+          <div className="grid lg:grid-cols-2 gap-6 mb-8">
+            <ContinueLearningCard items={placement.continueItems} />
+            <SmartInsightsCard insights={placement.insights} />
+          </div>
+
 
           {/* Top stat grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -298,8 +334,15 @@ export default function Dashboard() {
               </Card>
             </div>
           </div>
+
+          {/* Achievements + Activity timeline */}
+          <div className="grid lg:grid-cols-2 gap-6 mt-8">
+            <AchievementBadgeGrid badges={placement.badges} />
+            <RecentActivityTimeline items={placement.recent} />
+          </div>
         </div>
       </main>
+
 
       <Footer />
     </div>
