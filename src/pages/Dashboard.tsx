@@ -47,6 +47,7 @@ import { RecentActivityTimeline } from "@/components/dashboard/RecentActivityTim
 
 export default function Dashboard() {
   const { stats, loading } = useDashboardStats();
+  const placement = usePlacementData();
   const { user } = useAuth();
 
   const greeting = (() => {
