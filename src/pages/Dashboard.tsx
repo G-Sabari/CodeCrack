@@ -106,6 +106,31 @@ export default function Dashboard() {
             </Button>
           </div>
 
+          {/* Placement Readiness hero */}
+          <div className="mb-6">
+            <PlacementReadinessCard data={placement} />
+          </div>
+
+          {/* Recommendation */}
+          <div className="mb-6">
+            <RecommendationCard rec={placement.recommendation} />
+          </div>
+
+          {/* Career progress + daily goals */}
+          <div className="grid lg:grid-cols-3 gap-6 mb-6">
+            <div className="lg:col-span-2">
+              <CareerProgressGrid categories={placement.categories} overall={placement.overallCareer} />
+            </div>
+            <DailyGoalsCard goals={placement.dailyGoals} />
+          </div>
+
+          {/* Continue + Insights */}
+          <div className="grid lg:grid-cols-2 gap-6 mb-8">
+            <ContinueLearningCard items={placement.continueItems} />
+            <SmartInsightsCard insights={placement.insights} />
+          </div>
+
+
           {/* Top stat grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <StatCard
