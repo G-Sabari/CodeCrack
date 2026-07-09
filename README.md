@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚀 CodeCrack
+# CodeCrack 🚀
 
 ### The Complete Placement Preparation Platform
 
@@ -32,7 +32,7 @@
 
 <p align="center">
 
-<a href="https://code-crack-two.vercel.app/">🌐 Live Demo</a> •
+<a href="https://code-crack-two.vercel.app/">🌐 Live Demo </a> •
 <a href="#features">Features</a> •
 <a href="#tech-stack">Tech Stack</a> •
 <a href="#modules">Modules</a> •
@@ -439,7 +439,7 @@ src
 Clone repository
 
 ```bash
-git clone https://github.com/yourusername/codecrack.git
+git clone https://github.com/G-Sabari/codecrack.git
 ```
 
 Move into project
@@ -560,13 +560,13 @@ This project is licensed under the MIT License.
 
 # 👨‍💻 Developer
 
-## G. Sabari
+## SABARI G
 
 **B.Tech – Information Technology**
 
 St. Peter's College of Engineering and Technology
 
-📧 Email: your-email@example.com
+📧 Email: sabarideveloperofficial@gmail.com
 
 🌐 Portfolio: https://code-crack-two.vercel.app/
 
@@ -580,6 +580,6 @@ GitHub: https://github.com/yourusername
 
 <img src="https://readme-typing-svg.herokuapp.com?font=Poppins&size=22&duration=3000&pause=1000&color=9333EA&center=true&vCenter=true&width=700&lines=Thanks+for+visiting+CodeCrack!;Happy+Coding!;Keep+Learning+Keep+Growing!" />
 
-**Made with ❤️ by G. Sabari**
+**Made with ❤️ by SABARI G**
 
 </div>
