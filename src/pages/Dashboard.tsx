@@ -34,6 +34,16 @@ import { GlobalSearch } from "@/components/dashboard/GlobalSearch";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
+import { usePlacementData } from "@/hooks/usePlacementData";
+import { PlacementReadinessCard } from "@/components/dashboard/PlacementReadinessCard";
+import { CareerProgressGrid } from "@/components/dashboard/CareerProgressGrid";
+import { DailyGoalsCard } from "@/components/dashboard/DailyGoalsCard";
+import { ContinueLearningCard } from "@/components/dashboard/ContinueLearningCard";
+import { RecommendationCard } from "@/components/dashboard/RecommendationCard";
+import { AchievementBadgeGrid } from "@/components/dashboard/AchievementBadgeGrid";
+import { SmartInsightsCard } from "@/components/dashboard/SmartInsightsCard";
+import { RecentActivityTimeline } from "@/components/dashboard/RecentActivityTimeline";
+
 
 export default function Dashboard() {
   const { stats, loading } = useDashboardStats();
